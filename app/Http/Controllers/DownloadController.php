@@ -6,13 +6,14 @@ use App\Http\Requests\FileActionsRequest;
 use App\Models\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DownloadController extends Controller
 {
     /**
      * Donwload the file(s) or folder(s) from My Files section.
      *
-     * @return array
+     * @return array|\Symfony\Component\HttpFoundation\StreamedResponse
      */
     public function fromMyFiles(FileActionsRequest $request)
     {
@@ -27,22 +28,16 @@ class DownloadController extends Controller
         }
 
         if ($all) {
-            $url = $this->createZip($parent->children);
-            $filename = $parent->name.'.zip';
-        } else {
-            [$url, $filename] = $this->getDownloadUrl($ids, $parent->name);
+            return $this->downloadAsZip($parent->children, $parent->name.'.zip');
         }
 
-        return [
-            'url' => $url,
-            'filename' => $filename,
-        ];
+        return $this->handleDownload($ids, $parent->name);
     }
 
     /**
      * Donwload the file(s) or folder(s) from shared with me page.
      *
-     * @return array
+     * @return array|\Symfony\Component\HttpFoundation\StreamedResponse
      */
     public function sharedWithMe(FileActionsRequest $request)
     {
@@ -58,22 +53,17 @@ class DownloadController extends Controller
         $zipFileName = 'shared-with-me';
         if ($all) {
             $files = File::getSharedWithMe()->get();
-            $url = $this->createZip($files);
-            $filename = $zipFileName.'.zip';
-        } else {
-            [$url, $filename] = $this->getDownloadUrl($ids, $zipFileName);
+
+            return $this->downloadAsZip($files, $zipFileName.'.zip');
         }
 
-        return [
-            'url' => $url,
-            'filename' => $filename,
-        ];
+        return $this->handleDownload($ids, $zipFileName);
     }
 
     /**
      * Donwload the file(s) or folder(s) from shared by me page.
      *
-     * @return array
+     * @return array|\Symfony\Component\HttpFoundation\StreamedResponse
      */
     public function sharedByMe(FileActionsRequest $request)
     {
@@ -89,23 +79,79 @@ class DownloadController extends Controller
         $zipFileName = 'shared-by-me';
         if ($all) {
             $files = File::getSharedByMe()->get();
-            $url = $this->createZip($files);
-            $filename = $zipFileName.'.zip';
-        } else {
-            [$url, $filename] = $this->getDownloadUrl($ids, $zipFileName);
+
+            return $this->downloadAsZip($files, $zipFileName.'.zip');
         }
 
-        return [
-            'url' => $url,
-            'filename' => $filename,
-        ];
+        return $this->handleDownload($ids, $zipFileName);
+    }
+
+    /**
+     * Handle the download for given file IDs.
+     *
+     * @param  array  $ids
+     * @param  string  $zipName
+     * @return array|\Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    private function handleDownload($ids, $zipName)
+    {
+        if (count($ids) === 1) {
+            $file = File::find($ids[0]);
+            if ($file->is_folder) {
+                if ($file->children->count() === 0) {
+                    return ['message' => 'The folder is empty.'];
+                }
+
+                return $this->downloadAsZip($file->children, $file->name.'.zip');
+            }
+
+            // Single file — stream directly from storage (works with S3 and local)
+            return $this->streamSingleFile($file);
+        }
+
+        $files = File::whereIn('id', $ids)->get();
+
+        return $this->downloadAsZip($files, $zipName.'.zip');
+    }
+
+    /**
+     * Stream a single file directly from the storage disk.
+     *
+     * @param  \App\Models\File  $file
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    private function streamSingleFile(File $file)
+    {
+        return Storage::download($file->storage_path, $file->name);
+    }
+
+    /**
+     * Download multiple files/folders as a zip archive.
+     * Uses a temp file so it works on both local and cloud (S3) storage.
+     *
+     * @param  \Illuminate\Support\Collection  $files
+     * @param  string  $zipFileName
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    private function downloadAsZip($files, $zipFileName)
+    {
+        $tempZipPath = tempnam(sys_get_temp_dir(), 'zip_').'.zip';
+
+        $zip = new \ZipArchive();
+        if ($zip->open($tempZipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
+            $this->addFilesToZip($zip, $files);
+        }
+        $zip->close();
+
+        return response()->download($tempZipPath, $zipFileName)->deleteFileAfterSend(true);
     }
 
     /**
      * Add the given files into the provided zip archive.
+     * Streams file content from Storage (works with S3 and local).
      *
      * @param  \ZipArchive  $zip
-     * @param  array  $files
+     * @param  \Illuminate\Support\Collection  $files
      * @param  string  $ancestors
      * @return void
      */
@@ -115,70 +161,11 @@ class DownloadController extends Controller
             if ($file->is_folder) {
                 $this->addFilesToZip($zip, $file->children, $ancestors.$file->name.'/');
             } else {
-                $zip->addFile(Storage::path($file->storage_path), $ancestors.$file->name);
+                // Stream from any storage driver into a local temp file for zipping
+                $tempFile = tempnam(sys_get_temp_dir(), 'dl_');
+                file_put_contents($tempFile, Storage::get($file->storage_path));
+                $zip->addFile($tempFile, $ancestors.$file->name);
             }
         }
-    }
-
-    /**
-     * Get the download url and file name.
-     *
-     * @param  array  $ids
-     * @param  string  $zipName
-     * @return array
-     */
-    private function getDownloadUrl($ids, $zipName)
-    {
-        if (count($ids) === 1) {
-            $file = File::find($ids[0]);
-            if ($file->is_folder) {
-                if ($file->children->count() === 0) {
-                    return ['message' => 'The folder is empty.'];
-                }
-
-                $url = $this->createZip($file->children);
-                $filename = $file->name.'.zip';
-            } else {
-                $destination = 'public/'.pathinfo($file->storage_path, PATHINFO_BASENAME);
-                Storage::copy($file->storage_path, $destination);
-
-                $url = asset(Storage::url($destination));
-                $filename = $file->name;
-            }
-        } else {
-            $files = File::whereIn('id', $ids)->get();
-            $url = $this->createZip($files);
-            $filename = $zipName.'.zip';
-        }
-
-        return [$url, $filename];
-    }
-
-    /**
-     * Create the zip containing files and/or folders that the user
-     * has requested to download.
-     *
-     * @param  array  $files
-     * @return string
-     */
-    private function createZip($files)
-    {
-        $zipPath = 'zip/'.Str::random().'.zip';
-        $publicPath = "public/$zipPath";
-
-        if (! is_dir(dirname($publicPath))) {
-            Storage::makeDirectory(dirname($publicPath));
-        }
-
-        $zipFile = Storage::path($publicPath);
-
-        $zip = new \ZipArchive();
-        if ($zip->open($zipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
-            $this->addFilesToZip($zip, $files);
-        }
-
-        $zip->close();
-
-        return asset(Storage::url($zipPath));
     }
 }

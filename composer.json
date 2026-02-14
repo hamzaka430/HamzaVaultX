@@ -1,14 +1,14 @@
 {
     "name": "laravel/laravel",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": [
-        "laravel",
-        "framework"
-    ],
+    "description": "Google Drive Clone - Laravel 11",
+    "keywords": ["laravel", "framework"],
     "license": "MIT",
+
     "require": {
         "php": "^8.2",
+        "ext-pdo": "*",
+        "ext-pgsql": "*",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^1.0",
         "kalnoy/nestedset": "^6.0",
@@ -16,8 +16,10 @@
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
+        "league/flysystem-aws-s3-v3": "^3.0",
         "tightenco/ziggy": "^1.0"
     },
+
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
         "laravel/envoy": "^2.9",
@@ -28,38 +30,50 @@
         "phpunit/phpunit": "^10.1",
         "spatie/laravel-ignition": "^2.0"
     },
+
     "autoload": {
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "exclude-from-classmap": [
+            "vendor/league/flysystem/src/AwsS3V3/"
+        ]
     },
+
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
         }
     },
+
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
-        ],
-        "post-update-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "compile": [
+            "npm install",
+            "npm run build",
+            "@php artisan config:cache",
+            "@php artisan route:cache",
+            "@php artisan view:cache"
         ]
     },
+
     "extra": {
         "laravel": {
             "dont-discover": []
         }
     },
+
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
@@ -69,6 +83,7 @@
             "php-http/discovery": true
         }
     },
+
     "minimum-stability": "stable",
     "prefer-stable": true
 }

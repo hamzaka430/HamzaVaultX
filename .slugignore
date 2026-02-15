@@ -1,0 +1,5 @@
+/public/hot
+/tests
+/storage/framework/testing
+/.env.example
+README.md

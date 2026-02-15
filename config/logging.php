@@ -16,6 +16,10 @@ return [
     | messages to the logs. The name specified in this option should match
     | one of the channels defined in the "channels" configuration array.
     |
+    | Heroku Recommendation: Use 'errorlog' in production (writes to stderr)
+    | LOCAL: 'stack' writes to storage/logs/laravel.log
+    | HEROKU: 'errorlog' writes to stderr (visible in heroku logs)
+    |
     */
 
     'default' => env('LOG_CHANNEL', 'stack'),

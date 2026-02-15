@@ -11,11 +11,13 @@ return [
     | by the framework. The "local" disk, as well as a variety of cloud
     | based disks are available to your application. Just store away!
     |
-    | Auto-detects: Uses S3 when AWS credentials are set, local otherwise
+    | Heroku Production: Use 'local' for ephemeral storage or 'r2' for persistent
+    | LOCAL: Can use 'local' or 'r2' for development
+    | NOTE: Heroku filesystem is ephemeral - files are lost on dyno restart
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', env('AWS_BUCKET') ? 's3' : 'local'),
+    'default' => env('FILESYSTEM_DISK', 'local'),
 
     /*
     |--------------------------------------------------------------------------

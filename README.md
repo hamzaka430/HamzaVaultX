@@ -89,8 +89,8 @@ Add your screenshots here:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/hamzavaultx.git
-   cd hamzavaultx
+   git clone https://github.com/hamzaka430/HamzaVaultX.git
+   cd HamzaVaultX
    ```
 
 2. **Install PHP dependencies**
@@ -424,8 +424,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Hamza**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Project: [HamzaVaultX](https://github.com/yourusername/hamzavaultx)
+- GitHub: [@hamzaka430](https://github.com/hamzaka430)
+- Project: [HamzaVaultX](https://github.com/hamzaka430/HamzaVaultX)
 
 ## 🙏 Acknowledgments
 

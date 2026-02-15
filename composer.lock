@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4bf4c0aea0aaf934afa3fa393a73b80b",
+    "content-hash": "f80eabc0b51f58d87a42bcb75ee162b7",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -9125,7 +9125,9 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.2"
+        "php": "8.2.* || 8.3.*",
+        "ext-pdo": "*",
+        "ext-pgsql": "*"
     },
     "platform-dev": {},
     "plugin-api-version": "2.6.0"

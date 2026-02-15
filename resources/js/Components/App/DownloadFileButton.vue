@@ -2,7 +2,6 @@
 import { useForm, usePage } from "@inertiajs/vue3";
 import { ArrowDownCircleIcon } from "@heroicons/vue/24/outline";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
-import { httpGet } from "@/Helper/http-helper";
 import { computed } from "vue";
 
 const props = defineProps({
@@ -49,14 +48,8 @@ const download = () => {
         url = route("files.downloadSharedByMe");
     }
 
-    httpGet(`${url}?${urlParams.toString()}`).then((res) => {
-        if (!res.url) return;
-
-        const alink = document.createElement("a");
-        alink.download = res.filename;
-        alink.href = res.url;
-        alink.click();
-    });
+    // Trigger download by navigating to the URL
+    window.location.href = `${url}?${urlParams.toString()}`;
 };
 </script>
 

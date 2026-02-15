@@ -7,7 +7,9 @@ use App\Http\Requests\CreateFolderRequest;
 use App\Http\Requests\FileActionsRequest;
 use App\Http\Requests\ShareFilesRequest;
 use App\Http\Requests\StoreFileRequest;
+use App\Http\Requests\StoreNoteRequest;
 use App\Http\Requests\TrashFileRequest;
+use App\Http\Requests\UpdateNoteRequest;
 use App\Http\Resources\FileResource;
 use App\Mail\ShareFilesMail;
 use App\Models\File;
@@ -158,10 +160,20 @@ class FileController extends Controller
      */
     private function getRoot()
     {
-        return File::query()
+        $root = File::query()
             ->where('created_by', auth()->id())
             ->whereIsRoot()
-            ->firstOrFail();
+            ->first();
+
+        // If no root folder exists, create one
+        if (! $root) {
+            $root = new File();
+            $root->is_folder = true;
+            $root->name = auth()->user()->email;
+            $root->makeRoot()->save();
+        }
+
+        return $root;
     }
 
     /**
@@ -199,7 +211,7 @@ class FileController extends Controller
      */
     public function saveFile($file, $parent, $user)
     {
-        $path = $file->store('/files/'.$user->id);
+        $path = $file->store('/files/'.$user->id, 'r2');
 
         $model = new File();
         $model->is_folder = false;
@@ -361,10 +373,18 @@ class FileController extends Controller
                 'updated_at' => now(),
             ];
         }
-        FileShare::insert($data);
+        
+        if (! empty($data)) {
+            FileShare::insert($data);
 
-        Mail::to($user)
-            ->send(new ShareFilesMail($user, auth()->user(), $files));
+            try {
+                Mail::to($user)
+                    ->send(new ShareFilesMail($user, auth()->user(), $files));
+            } catch (\Exception $e) {
+                // Mail sending failed, but sharing succeeded
+                // Log the error if needed: \Log::error('Mail send failed: '.$e->getMessage());
+            }
+        }
 
         return back();
     }
@@ -419,5 +439,167 @@ class FileController extends Controller
             'files' => $files,
             'search' => $search,
         ]);
+    }
+
+    /**
+     * Store a new note.
+     *
+     * @param  \App\Http\Requests\StoreNoteRequest  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function storeNote(StoreNoteRequest $request)
+    {
+        $payload = $request->validated();
+
+        $parent = $payload['parent_id'] 
+            ? File::findOrFail($payload['parent_id'])
+            : $this->getRoot();
+
+        $note = new File();
+        $note->is_folder = false;
+        $note->type = 'note';
+        $note->name = $payload['name'];
+        $note->note_content = $payload['note_content'];
+        $note->mime = 'text/plain';
+        $note->size = strlen($payload['note_content']);
+
+        $parent->appendNode($note);
+
+        return back();
+    }
+
+    /**
+     * Update an existing note.
+     *
+     * @param  \App\Http\Requests\UpdateNoteRequest  $request
+     * @param  \App\Models\File  $file
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateNote(UpdateNoteRequest $request, File $file)
+    {
+        // Check if user is the owner
+        if (!$file->isOwnedBy(auth()->id())) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Ensure it's a note
+        if ($file->type !== 'note') {
+            abort(400, 'This is not a note.');
+        }
+
+        $payload = $request->validated();
+
+        $file->name = $payload['name'];
+        $file->note_content = $payload['note_content'];
+        $file->size = strlen($payload['note_content']);
+        $file->save();
+
+        return back();
+    }
+
+    /**
+     * Delete a note.
+     *
+     * @param  \App\Models\File  $file
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteNote(File $file)
+    {
+        // Check if user is the owner
+        if (!$file->isOwnedBy(auth()->id())) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Ensure it's a note
+        if ($file->type !== 'note') {
+            abort(400, 'This is not a note.');
+        }
+
+        $file->moveToTrash();
+
+        return back();
+    }
+
+    /**
+     * Download a note as a .txt file.
+     *
+     * @param  \App\Models\File  $file
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public function downloadNote(File $file)
+    {
+        // Check if user has access
+        if (!$file->isOwnedBy(auth()->id())) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Ensure it's a note
+        if ($file->type !== 'note') {
+            abort(400, 'This is not a note.');
+        }
+
+        $filename = $file->name . '.txt';
+        $content = $file->note_content ?? '';
+
+        return response()->streamDownload(function () use ($content) {
+            echo $content;
+        }, $filename, [
+            'Content-Type' => 'text/plain',
+        ]);
+    }
+
+    /**
+     * Preview a file or note.
+     *
+     * @param  \App\Models\File  $file
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function previewFile(File $file)
+    {
+        // Check if user has access (owner or shared with them)
+        $hasAccess = $file->isOwnedBy(auth()->id()) || 
+                     FileShare::where('file_id', $file->id)
+                              ->where('user_id', auth()->id())
+                              ->exists();
+
+        if (!$hasAccess) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // If it's a note, return the content
+        if ($file->type === 'note') {
+            return response()->json([
+                'type' => 'note',
+                'name' => $file->name,
+                'content' => $file->note_content ?? '',
+            ]);
+        }
+
+        // For regular files, generate temporary signed URL (5 minutes)
+        if ($file->storage_path) {
+            try {
+                $url = Storage::disk('r2')->temporaryUrl(
+                    $file->storage_path,
+                    now()->addMinutes(5)
+                );
+
+                return response()->json([
+                    'type' => 'file',
+                    'name' => $file->name,
+                    'mime' => $file->mime,
+                    'url' => $url,
+                ]);
+            } catch (\Exception $e) {
+                // Fallback for local storage (doesn't support temporaryUrl)
+                return response()->json([
+                    'type' => 'file',
+                    'name' => $file->name,
+                    'mime' => $file->mime,
+                    'url' => Storage::disk('r2')->url($file->storage_path),
+                ]);
+            }
+        }
+
+        abort(404, 'File not found.');
     }
 }

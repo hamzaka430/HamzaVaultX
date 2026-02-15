@@ -44,24 +44,7 @@ const closeConfirmDialog = () => {
     showEmailsModal.value = false;
 };
 
-const onConfirm = () => {
-    if (props.allSelected) {
-        form.all = true;
-        form.ids = [];
-    } else {
-        form.ids = props.selectedIds;
-    }
 
-    form.post(route("files.restore"), {
-        onSuccess: () => {
-            showEmailsModal.value = false;
-            showSuccessNotification(
-                "Selected files have been successfully restored."
-            );
-            emit("restore");
-        },
-    });
-};
 </script>
 
 <template>

@@ -16,6 +16,31 @@ class File extends Model
     use HasCreatorAndUpdater, HasFactory, NodeTrait, SoftDeletes;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'is_folder',
+        'type',
+        'mime',
+        'size',
+        'storage_path',
+        'note_content',
+        'parent_id',
+    ];
+
+    /**
+     * The attributes that should have default values.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'type' => 'file',
+    ];
+
+    /**
      * The file or folder belongs to a single user.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -97,7 +122,24 @@ class File extends Model
      */
     public function deleteForever()
     {
-        $this->deleteFilesFromStorage([$this]);
+        // If it's a folder, recursively delete all children first (including trashed ones)
+        if ($this->is_folder) {
+            $children = static::withTrashed()->where('parent_id', $this->id)->get();
+            foreach ($children as $child) {
+                $child->deleteForever();
+            }
+        }
+        
+        // Delete related records to avoid foreign key constraint errors
+        \DB::table('file_shares')->where('file_id', $this->id)->delete();
+        \DB::table('starred_files')->where('file_id', $this->id)->delete();
+        
+        // Delete files from storage (only for actual files, not folders or notes)
+        if (!$this->is_folder && $this->type !== 'note' && $this->storage_path) {
+            \Illuminate\Support\Facades\Storage::disk('r2')->delete($this->storage_path);
+        }
+        
+        // Force delete the record
         $this->forceDelete();
     }
 
@@ -113,7 +155,10 @@ class File extends Model
             if ($file->is_folder) {
                 $this->deleteFilesFromStorage($file->children);
             } else {
-                Storage::delete($file->storage_path);
+                // Only delete from storage if it's not a note
+                if ($file->type !== 'note' && $file->storage_path) {
+                    Storage::disk('r2')->delete($file->storage_path);
+                }
             }
         }
     }

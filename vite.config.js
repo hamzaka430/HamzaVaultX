@@ -7,6 +7,12 @@ export default defineConfig({
     plugins: [
         viteCompression({
             algorithm: "brotliCompress",
+            ext: ".br",
+            threshold: 10240,
+        }),
+        viteCompression({
+            algorithm: "gzip",
+            ext: ".gz",
         }),
         laravel({
             input: "resources/js/app.js",
@@ -21,4 +27,13 @@ export default defineConfig({
             },
         }),
     ],
+    build: {
+        manifest: true,
+        outDir: "public/build",
+        rollupOptions: {
+            output: {
+                manualChunks: undefined,
+            },
+        },
+    },
 });

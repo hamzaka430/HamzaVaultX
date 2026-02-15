@@ -6,6 +6,9 @@ import { ref, onMounted, onUpdated, computed } from "vue";
 import { httpGet } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
 import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
+import EditNoteModal from "@/Components/App/EditNoteModal.vue";
+import FilePreviewModal from "@/Components/App/FilePreviewModal.vue";
+import { canPreview } from "@/Helper/file-helper.js";
 
 const props = defineProps({
     files: Object,
@@ -20,6 +23,10 @@ const allFiles = ref({
 
 const allSelected = ref(false);
 const selected = ref({});
+const editNoteModal = ref(false);
+const selectedNote = ref(null);
+const previewModal = ref(false);
+const previewFile = ref(null);
 
 const selectedIds = computed(() => {
     return Object.entries(selected.value)
@@ -47,6 +54,18 @@ const onSelectAllChange = () => {
 const toggleFileSelect = (file) => {
     selected.value[file.id] = !selected.value[file.id];
     onSelectCheckboxChange(file);
+};
+
+const openNote = (file) => {
+    if (!file.is_folder && canPreview(file)) {
+        previewFile.value = file;
+        previewModal.value = true;
+    }
+};
+
+const handleEditNote = (note) => {
+    selectedNote.value = note;
+    editNoteModal.value = true;
 };
 
 const onSelectCheckboxChange = (file) => {
@@ -149,6 +168,7 @@ onMounted(() => {
                         v-for="file in allFiles.data"
                         :key="file.id"
                         @click="($event) => toggleFileSelect(file)"
+                        @dblclick="openNote(file)"
                     >
                         <td
                             class="pl-6 py-4 pr-0 w-7 max-w-7 font-medium tracking-wider text-gray-900 whitespace-nowrap"
@@ -187,5 +207,12 @@ onMounted(() => {
 
             <div ref="loadMoreIntersect"></div>
         </div>
+
+        <EditNoteModal v-model="editNoteModal" :note="selectedNote" />
+        <FilePreviewModal 
+            v-model="previewModal" 
+            :file="previewFile"
+            @edit-note="handleEditNote"
+        />
     </AuthenticatedLayout>
 </template>

@@ -122,7 +122,19 @@ class DownloadController extends Controller
      */
     private function streamSingleFile(File $file)
     {
-        return Storage::download($file->storage_path, $file->name);
+        // Handle note files
+        if ($file->type === 'note') {
+            $filename = $file->name . '.txt';
+            $content = $file->note_content ?? '';
+
+            return response()->streamDownload(function () use ($content) {
+                echo $content;
+            }, $filename, [
+                'Content-Type' => 'text/plain',
+            ]);
+        }
+
+        return Storage::disk('r2')->download($file->storage_path, $file->name);
     }
 
     /**
@@ -157,15 +169,32 @@ class DownloadController extends Controller
      */
     private function addFilesToZip($zip, $files, $ancestors = '')
     {
+        $tempFiles = [];
+        
         foreach ($files as $file) {
             if ($file->is_folder) {
                 $this->addFilesToZip($zip, $file->children, $ancestors.$file->name.'/');
             } else {
-                // Stream from any storage driver into a local temp file for zipping
-                $tempFile = tempnam(sys_get_temp_dir(), 'dl_');
-                file_put_contents($tempFile, Storage::get($file->storage_path));
-                $zip->addFile($tempFile, $ancestors.$file->name);
+                // Handle notes differently
+                if ($file->type === 'note') {
+                    $zip->addFromString($ancestors.$file->name.'.txt', $file->note_content ?? '');
+                } else {
+                    // Stream from any storage driver into a local temp file for zipping
+                    $tempFile = tempnam(sys_get_temp_dir(), 'dl_');
+                    file_put_contents($tempFile, Storage::disk('r2')->get($file->storage_path));
+                    $zip->addFile($tempFile, $ancestors.$file->name);
+                    $tempFiles[] = $tempFile;
+                }
             }
         }
+        
+        // Clean up temp files after they're added to zip
+        register_shutdown_function(function () use ($tempFiles) {
+            foreach ($tempFiles as $tempFile) {
+                if (file_exists($tempFile)) {
+                    @unlink($tempFile);
+                }
+            }
+        });
     }
 }

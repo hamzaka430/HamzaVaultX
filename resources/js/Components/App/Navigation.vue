@@ -7,12 +7,8 @@ import NavLink from "@/Components/App/NavLink.vue";
 
 <template>
     <nav class="min-w-[200px]">
-        <Link :href="route('myFiles')" class="h-[80px] px-3 flex items-center">
-            <ApplicationLogo class="h-7" />
-            <span class="mx-0.5 text-2xl font-bold text-blue-600">
-                GDStore
-            </span>
-            <ApplicationLogo class="h-7" />
+        <Link :href="route('myFiles')" class="h-[80px] px-3 flex items-center justify-center">
+            <ApplicationLogo class="h-40" />
         </Link>
 
         <div class="px-3">

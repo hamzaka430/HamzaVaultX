@@ -13,12 +13,16 @@ export const httpGet = (url) => {
 
 export const httpPost = (url, data) => {
     return new Promise((resolve, reject) => {
+        // Get CSRF token from Inertia props or meta tag as fallback
+        const csrfToken = usePage()?.props?._csrf_token || 
+                         document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
         fetch(url, {
             method: "POST",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": usePage().props._csrf_token,
+                "X-CSRF-TOKEN": csrfToken,
             },
             body: JSON.stringify(data),
         }).then((response) => {

@@ -24,9 +24,9 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::controller(FileController::class)->group(function () {
         Route::get('/my-files/{folder?}', 'index')->where('folder', '(.*)')->name('myFiles');
         Route::get('/shared-with-me', 'sharedWithMe')->name('sharedWithMe');
@@ -44,6 +44,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('share', 'share')->name('.share');
         Route::post('/toggle-favourite', 'toggleFavourite')->name('.toggleFavourite');
+    });
+
+    Route::name('notes')->prefix('notes')->controller(FileController::class)->group(function () {
+        Route::post('/', 'storeNote')->name('.store');
+        Route::put('/{file}', 'updateNote')->name('.update');
+        Route::delete('/{file}', 'deleteNote')->name('.delete');
+        Route::get('/{file}/download', 'downloadNote')->name('.download');
+    });
+
+    Route::name('files')->controller(FileController::class)->group(function () {
+        Route::get('/files/{file}/preview', 'previewFile')->name('.preview');
     });
 
     Route::name('files')->prefix('files')->controller(DownloadController::class)->group(function () {

@@ -1,0 +1,107 @@
+{
+  "name": "HamzaVaultX - Google Drive Clone",
+  "description": "A Google Drive clone built with Laravel 11, InertiaJS, Vue 3, and Cloudflare R2",
+  "keywords": ["laravel", "vue", "inertia", "google-drive", "file-storage", "cloudflare-r2"],
+  "website": "https://github.com/yourusername/hamzavaultx",
+  "repository": "https://github.com/yourusername/hamzavaultx",
+  "logo": "https://laravel.com/img/logomark.min.svg",
+  "success_url": "/",
+  "stack": "heroku-22",
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    },
+    {
+      "url": "heroku/php"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:essential-0",
+      "as": "DATABASE"
+    }
+  ],
+  "env": {
+    "APP_NAME": {
+      "description": "Application name",
+      "value": "HamzaVaultX"
+    },
+    "APP_ENV": {
+      "description": "Application environment",
+      "value": "production"
+    },
+    "APP_KEY": {
+      "description": "Application encryption key (run: php artisan key:generate --show)",
+      "generator": "secret"
+    },
+    "APP_DEBUG": {
+      "description": "Enable debug mode (should be false in production)",
+      "value": "false"
+    },
+    "LOG_CHANNEL": {
+      "description": "Log channel",
+      "value": "stack"
+    },
+    "LOG_LEVEL": {
+      "description": "Log level",
+      "value": "error"
+    },
+    "DB_CONNECTION": {
+      "description": "Database connection type",
+      "value": "pgsql"
+    },
+    "FILESYSTEM_DISK": {
+      "description": "Default filesystem disk",
+      "value": "r2"
+    },
+    "AWS_ACCESS_KEY_ID": {
+      "description": "Cloudflare R2 Access Key ID",
+      "required": true
+    },
+    "AWS_SECRET_ACCESS_KEY": {
+      "description": "Cloudflare R2 Secret Access Key",
+      "required": true
+    },
+    "AWS_DEFAULT_REGION": {
+      "description": "Cloudflare R2 region",
+      "value": "auto"
+    },
+    "AWS_BUCKET": {
+      "description": "Cloudflare R2 bucket name",
+      "value": "hamzavaultx"
+    },
+    "AWS_ENDPOINT": {
+      "description": "Cloudflare R2 endpoint URL",
+      "required": true
+    },
+    "AWS_USE_PATH_STYLE_ENDPOINT": {
+      "description": "Use path style endpoint",
+      "value": "false"
+    },
+    "SESSION_DRIVER": {
+      "description": "Session driver",
+      "value": "database"
+    },
+    "CACHE_DRIVER": {
+      "description": "Cache driver",
+      "value": "database"
+    },
+    "QUEUE_CONNECTION": {
+      "description": "Queue connection",
+      "value": "database"
+    },
+    "MAIL_MAILER": {
+      "description": "Mail mailer",
+      "value": "smtp"
+    }
+  },
+  "scripts": {
+    "postdeploy": "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache"
+  }
+}

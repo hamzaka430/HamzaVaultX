@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Number;
 
 class FileResource extends JsonResource
 {
@@ -33,7 +32,7 @@ class FileResource extends JsonResource
             'parent_id' => $this->parent_id,
             'is_folder' => $this->is_folder,
             'mime' => $this->mime,
-            'size' => Number::fileSize($size, 2),
+            'size' => $this->formatBytes($size),
             'owner' => $this->owner,
             'is_favourite' => (bool) $this->starred,
             'created_at' => $this->created_at->diffForHumans(),
@@ -42,6 +41,28 @@ class FileResource extends JsonResource
             'updated_by' => $this->updated_by,
             'deleted_at' => $this->deleted_at,
         ];
+    }
+
+    /**
+     * Format bytes to human readable size.
+     *
+     * @param  int  $bytes
+     * @param  int  $precision
+     * @return string
+     */
+    private function formatBytes($bytes, $precision = 2)
+    {
+        if ($bytes === 0) {
+            return '0 B';
+        }
+
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+
+        $bytes /= (1 << (10 * $pow));
+
+        return round($bytes, $precision).' '.$units[$pow];
     }
 
     /**
@@ -56,12 +77,12 @@ class FileResource extends JsonResource
             foreach ($content->children as $child) {
                 if ($child->is_folder) {
                     $this->getTotalSize($child);
+                } else {
+                    $this->totalSize += (int) ($child->size ?? 0);
                 }
-
-                $this->totalSize += $child->size;
             }
         } else {
-            $this->totalSize += $content->size;
+            $this->totalSize += (int) ($content->size ?? 0);
         }
 
         return $this->totalSize;

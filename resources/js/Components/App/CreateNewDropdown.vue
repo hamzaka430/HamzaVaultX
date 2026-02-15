@@ -2,15 +2,21 @@
 import { ref } from "vue";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
 import CreateFolderModal from "@/Components/App/CreateFolderModal.vue";
+import CreateNoteModal from "@/Components/App/CreateNoteModal.vue";
 import FileUploadMenuItem from "@/Components/App/FileUploadMenuItem.vue";
 import FolderUploadMenuItem from "@/Components/App/FolderUploadMenuItem.vue";
 import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 const createFolderModal = ref(false);
+const createNoteModal = ref(false);
 
 const showCreateFolderModal = () => {
     createFolderModal.value = true;
+};
+
+const showCreateNoteModal = () => {
+    createNoteModal.value = true;
 };
 
 const btnDisabled = computed(() => {
@@ -48,6 +54,14 @@ const btnDisabled = computed(() => {
                             >New Folder</a
                         >
                     </MenuItem>
+                    <MenuItem v-slot="{ active }">
+                        <a
+                            href="#"
+                            class="text-gray-700 block px-4 py-2 text-sm"
+                            @click.prevent="showCreateNoteModal"
+                            >New Note</a
+                        >
+                    </MenuItem>
                 </div>
                 <div class="px-1 py-1">
                     <FileUploadMenuItem />
@@ -59,4 +73,5 @@ const btnDisabled = computed(() => {
     </Menu>
 
     <CreateFolderModal v-model="createFolderModal" />
+    <CreateNoteModal v-model="createNoteModal" />
 </template>

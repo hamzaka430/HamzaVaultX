@@ -15,6 +15,9 @@ import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
 import { StarIcon as StarOutlineIcon } from "@heroicons/vue/24/outline";
 import { ON_SEARCH, emitter, showSuccessNotification } from "@/event-bus";
 import ShareFileButton from "@/Components/App/ShareFileButton.vue";
+import EditNoteModal from "@/Components/App/EditNoteModal.vue";
+import FilePreviewModal from "@/Components/App/FilePreviewModal.vue";
+import { canPreview } from "@/Helper/file-helper.js";
 
 const props = defineProps({
     files: Object,
@@ -30,6 +33,10 @@ const allFiles = ref({
 const allSelected = ref(false);
 const selected = ref({});
 const onlyFavourites = ref(false);
+const editNoteModal = ref(false);
+const selectedNote = ref(null);
+const previewModal = ref(false);
+const previewFile = ref(null);
 
 const selectedIds = computed(() => {
     return Object.entries(selected.value)
@@ -38,11 +45,23 @@ const selectedIds = computed(() => {
 });
 
 const openFolder = (file) => {
+    // If file can be previewed, open preview modal
+    if (!file.is_folder && canPreview(file)) {
+        previewFile.value = file;
+        previewModal.value = true;
+        return;
+    }
+    
     if (!file.is_folder) {
         return;
     }
 
     router.visit(route("myFiles", { folder: file.path }));
+};
+
+const handleEditNote = (note) => {
+    selectedNote.value = note;
+    editNoteModal.value = true;
 };
 
 const loadMore = () => {
@@ -97,6 +116,11 @@ const toggleFavourite = (file) => {
 
     httpPost(route("files.toggleFavourite"), { id: file.id }).then(() => {
         file.is_favourite = !file.is_favourite;
+        // Trigger reactivity by updating the files array
+        const index = allFiles.value.data.findIndex(f => f.id === file.id);
+        if (index !== -1) {
+            allFiles.value.data[index] = { ...file };
+        }
         showSuccessNotification(
             `The file has been successfully ${actionType}.`
         );
@@ -311,5 +335,12 @@ onMounted(() => {
 
             <div ref="loadMoreIntersect"></div>
         </div>
+
+        <EditNoteModal v-model="editNoteModal" :note="selectedNote" />
+        <FilePreviewModal 
+            v-model="previewModal" 
+            :file="previewFile"
+            @edit-note="handleEditNote"
+        />
     </AuthenticatedLayout>
 </template>

@@ -10,7 +10,7 @@ import {
     WordImg,
     ZipImg,
 } from "@/Images";
-import { FolderIcon } from "@heroicons/vue/24/outline";
+import { FolderIcon, DocumentTextIcon } from "@heroicons/vue/24/outline";
 import {
     isImage,
     isAudio,
@@ -30,6 +30,7 @@ const { file } = defineProps({
 <template>
     <span class="w-6 h-6 flex items-center justify-center mr-2">
         <FolderIcon class="w-6 h-6" v-if="file.is_folder" />
+        <DocumentTextIcon class="w-6 h-6 text-blue-600" v-else-if="file.type === 'note'" />
 
         <img
             v-else-if="isImage(file)"

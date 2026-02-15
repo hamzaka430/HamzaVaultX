@@ -99,7 +99,7 @@ const uploadFiles = (files) => {
                     <UserSettingsDropDown />
                 </div>
 
-                <div class="flex flex-col flex-1 overflow-hidden">
+                <div class="flex flex-col flex-1 overflow-auto">
                     <slot></slot>
                 </div>
             </template>

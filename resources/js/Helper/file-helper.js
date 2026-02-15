@@ -64,3 +64,16 @@ export const isText = (file) => {
         "text/csv",
     ].includes(file.mime);
 };
+
+export const canPreview = (file) => {
+    if (file.type === 'note') return true;
+    return isImage(file) || isPDF(file) || isVideo(file);
+};
+
+export const getPreviewType = (file) => {
+    if (file.type === 'note') return 'note';
+    if (isImage(file)) return 'image';
+    if (isPDF(file)) return 'pdf';
+    if (isVideo(file)) return 'video';
+    return null;
+};

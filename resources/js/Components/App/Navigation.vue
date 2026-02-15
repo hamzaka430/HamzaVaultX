@@ -7,8 +7,8 @@ import NavLink from "@/Components/App/NavLink.vue";
 
 <template>
     <nav class="min-w-[200px]">
-        <Link :href="route('myFiles')" class="h-[80px] px-3 flex items-center justify-center">
-            <ApplicationLogo class="h-40" />
+        <Link :href="route('myFiles')" class="h-[120px] px-3 flex items-center justify-center">
+            <ApplicationLogo class="h-24" />
         </Link>
 
         <div class="px-3">

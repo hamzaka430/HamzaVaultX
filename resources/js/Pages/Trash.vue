@@ -143,13 +143,13 @@ onMounted(() => {
                     class="text-xs text-gray-700 uppercase tracking-wider bg-gray-200"
                 >
                     <tr>
-                        <th class="px-6 py-3">
+                        <th class="pl-6 pr-0 py-3 w-7 max-w-7">
                             <Checkbox
                                 v-model:checked="allSelected"
                                 @change="onSelectAllChange"
                             />
                         </th>
-                        <th class="pl-6 pr-0 py-3 w-7 max-w-7">Name</th>
+                        <th class="px-6 py-3">Name</th>
                         <th class="px-6 py-3">Path</th>
                     </tr>
                 </thead>

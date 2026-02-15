@@ -6,7 +6,7 @@
   "repository": "https://github.com/yourusername/hamzavaultx",
   "logo": "https://laravel.com/img/logomark.min.svg",
   "success_url": "/",
-  "stack": "heroku-22",
+  "stack": "heroku-24",
   "buildpacks": [
     {
       "url": "heroku/nodejs"

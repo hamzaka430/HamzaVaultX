@@ -24,92 +24,107 @@ const handleNavClick = () => {
 
 <template>
     <!-- Desktop Sidebar -->
-    <nav
-        class="hidden lg:flex lg:flex-col bg-white border-r border-gray-200 w-56 xl:w-64"
-    >
+    <nav class="hidden lg:flex lg:flex-col bg-white border-r border-gray-200 w-60 xl:w-64">
+        <!-- Logo Section - Desktop -->
         <Link
             :href="route('myFiles')"
-            class="h-36 xl:h-44 flex items-center justify-center"
+            class="flex items-center justify-center pt-4 border-b border-gray-100"
         >
-            <ApplicationLogo class="h-32 xl:h-40" />
+            <ApplicationLogo class="w-40 xl:w-44 h-auto" />
         </Link>
 
-        <div class="px-3 flex-1 overflow-y-auto">
-            <CreateNewDropdown />
+        <!-- Navigation Content -->
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            <div class="px-4 py-4">
+                <CreateNewDropdown />
+            </div>
 
-            <div class="py-3 space-y-1">
+            <nav class="flex-1 px-3 py-2 space-y-1">
                 <NavLink
                     :href="route('myFiles')"
                     :active="$page.props.current_route === 'myFiles'"
-                    >My Files</NavLink
                 >
+                    My Files
+                </NavLink>
                 <NavLink
                     :href="route('sharedWithMe')"
                     :active="$page.props.current_route === 'sharedWithMe'"
-                    >Shared With Me</NavLink
                 >
+                    Shared With Me
+                </NavLink>
                 <NavLink
                     :href="route('sharedByMe')"
                     :active="$page.props.current_route === 'sharedByMe'"
-                    >Shared By Me</NavLink
                 >
+                    Shared By Me
+                </NavLink>
                 <NavLink
                     :href="route('trash')"
                     :active="$page.props.current_route === 'trash'"
-                    >Trash</NavLink
                 >
-            </div>
+                    Trash
+                </NavLink>
+            </nav>
         </div>
     </nav>
 
     <!-- Mobile Sidebar -->
     <nav
         :class="[
-            'fixed inset-y-0 left-0 z-50 w-64 bg-white transform transition-transform duration-300 ease-in-out lg:hidden',
+            'fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 shadow-2xl transform transition-transform duration-300 ease-in-out lg:hidden',
             sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         ]"
     >
-        <div class="flex items-center justify-between h-40">
-            <Link :href="route('myFiles')" @click="handleNavClick">
-                <ApplicationLogo class="h-36" />
+        <!-- Mobile Header -->
+        <div class="relative flex items-center justify-center pt-4 border-b border-gray-100">
+            <Link :href="route('myFiles')" @click="handleNavClick" class="flex items-center justify-center">
+                <ApplicationLogo class="w-36 h-auto" />
             </Link>
             <button
                 @click="$emit('close')"
-                class="p-2 rounded-md hover:bg-gray-100 transition-colors"
+                class="absolute right-2 p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                aria-label="Close menu"
             >
-                <XMarkIcon class="w-6 h-6 text-gray-700" />
+                <XMarkIcon class="w-6 h-6 text-gray-600" />
             </button>
         </div>
 
-        <div class="px-3 overflow-y-auto h-[calc(100vh-10rem)]">
-            <CreateNewDropdown />
+        <!-- Mobile Navigation Content -->
+        <div class="flex-1 flex flex-col overflow-y-auto h-[calc(100vh-5rem)]">
+            <div class="px-4 py-4">
+                <CreateNewDropdown />
+            </div>
 
-            <div class="py-3 space-y-1">
+            <nav class="flex-1 px-3 py-2 space-y-1">
                 <NavLink
                     :href="route('myFiles')"
                     :active="$page.props.current_route === 'myFiles'"
                     @click="handleNavClick"
-                    >My Files</NavLink
                 >
+                    My Files
+                </NavLink>
                 <NavLink
                     :href="route('sharedWithMe')"
                     :active="$page.props.current_route === 'sharedWithMe'"
                     @click="handleNavClick"
-                    >Shared With Me</NavLink
                 >
+                    Shared With Me
+                </NavLink>
                 <NavLink
                     :href="route('sharedByMe')"
                     :active="$page.props.current_route === 'sharedByMe'"
                     @click="handleNavClick"
-                    >Shared By Me</NavLink
                 >
+                    Shared By Me
+                </NavLink>
                 <NavLink
                     :href="route('trash')"
                     :active="$page.props.current_route === 'trash'"
                     @click="handleNavClick"
-                    >Trash</NavLink
                 >
-            </div>
+                    Trash
+                </NavLink>
+            </nav>
         </div>
     </nav>
 </template>

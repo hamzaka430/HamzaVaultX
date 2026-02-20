@@ -13,9 +13,11 @@ import { useForm, usePage } from "@inertiajs/vue3";
 import FormProgress from "@/Components/App/FormProgress.vue";
 import ErrorDialog from "@/Components/ErrorDialog.vue";
 import Notification from "@/Components/Notification.vue";
+import { Bars3Icon } from "@heroicons/vue/24/outline";
 
 const page = usePage();
 const dragOver = ref(false);
+const sidebarOpen = ref(false);
 
 onMounted(() => {
     emitter.on(FILE_UPLOAD_STARTED, uploadFiles);
@@ -73,14 +75,33 @@ const uploadFiles = (files) => {
         },
     });
 };
+
+const toggleSidebar = () => {
+    sidebarOpen.value = !sidebarOpen.value;
+};
+
+const closeSidebar = () => {
+    sidebarOpen.value = false;
+};
 </script>
 
 <template>
-    <div class="h-screen bg-gray-50 flex w-full gap-4">
-        <Navigation />
+    <div class="h-screen bg-gray-50 flex w-full">
+        <!-- Mobile Sidebar Overlay -->
+        <div
+            v-if="sidebarOpen"
+            class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            @click="closeSidebar"
+        ></div>
+
+        <!-- Sidebar Navigation -->
+        <Navigation 
+            :sidebar-open="sidebarOpen" 
+            @close="closeSidebar"
+        />
 
         <main
-            class="flex flex-col flex-1 px-4 overflow-hidden"
+            class="flex flex-col flex-1 px-2 sm:px-4 overflow-hidden"
             :class="dragOver ? 'dropzone' : ''"
             @drop.prevent="onDrop"
             @dragover.prevent="onDragOver"
@@ -94,7 +115,16 @@ const uploadFiles = (files) => {
             </template>
 
             <template v-else>
-                <div class="flex items-center justify-between w-full">
+                <!-- Header with Mobile Menu Button -->
+                <div class="flex items-center justify-between w-full gap-2">
+                    <!-- Mobile Menu Button -->
+                    <button
+                        @click="toggleSidebar"
+                        class="lg:hidden p-2 rounded-md hover:bg-gray-200 transition-colors"
+                    >
+                        <Bars3Icon class="w-6 h-6 text-gray-700" />
+                    </button>
+
                     <SearchForm />
                     <UserSettingsDropDown />
                 </div>

@@ -10,6 +10,7 @@ import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
 import RestoreFileButton from "@/Components/App/RestoreFileButton.vue";
 import DeleteForeverButton from "@/Components/App/DeleteForeverButton.vue";
 
+
 const props = defineProps({
     files: Object,
     folder: Object,
@@ -108,19 +109,19 @@ onMounted(() => {
     <AuthenticatedLayout>
         <Head title="Trash" />
 
-        <nav class="flex items-center justify-between p-1 mb-3">
+        <nav class="flex flex-col sm:flex-row sm:items-center justify-between p-1 mb-3 gap-3">
             <ol class="inline-flex items-center space-x-1">
                 <li class="inline-flex items-center">
                     <Link
                         :href="route('trash')"
-                        class="flex items-center font-medium text-gray-700 hover:text-blue-600"
+                        class="flex items-center text-sm sm:text-base font-medium text-gray-700 hover:text-blue-600"
                     >
                         Trash
                     </Link>
                 </li>
             </ol>
 
-            <div class="space-x-4">
+            <div class="flex items-center gap-2 flex-wrap">
                 <RestoreFileButton
                     :all-selected="allSelected"
                     :selected-ids="selectedIds"
@@ -136,63 +137,101 @@ onMounted(() => {
         </nav>
 
         <div class="flex-1 overflow-auto">
-            <table
-                class="w-full text-sm text-left text-gray-500 rounded overflow-hidden shadow"
-            >
-                <thead
-                    class="text-xs text-gray-700 uppercase tracking-wider bg-gray-200"
+            <!-- Mobile Card View -->
+            <div class="block md:hidden space-y-2">
+                <div
+                    v-for="file in allFiles.data"
+                    :key="file.id"
+                    class="bg-white rounded-lg shadow p-4 border border-gray-200"
+                    :class="
+                        selected[file.id] || allSelected
+                            ? 'ring-2 ring-blue-500 bg-blue-50'
+                            : ''
+                    "
+                    @click="($event) => toggleFileSelect(file)"
                 >
-                    <tr>
-                        <th class="pl-6 pr-0 py-3 w-7 max-w-7">
-                            <Checkbox
-                                v-model:checked="allSelected"
-                                @change="onSelectAllChange"
-                            />
-                        </th>
-                        <th class="px-6 py-3">Name</th>
-                        <th class="px-6 py-3">Path</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <tr
-                        class="border-b hover:bg-blue-100 cursor-pointer transition ease-in-out duration-200"
-                        :class="
-                            selected[file.id] || allSelected
-                                ? 'bg-blue-50'
-                                : 'bg-white'
-                        "
-                        v-for="file in allFiles.data"
-                        :key="file.id"
-                        @click="($event) => toggleFileSelect(file)"
-                    >
-                        <td
-                            class="pl-6 py-4 pr-0 w-7 max-w-7 font-medium tracking-wider text-gray-900 whitespace-nowrap"
-                        >
-                            <Checkbox
-                                v-model="selected[file.id]"
-                                :checked="selected[file.id] || allSelected"
-                                @change="
-                                    ($event) => onSelectCheckboxChange(file)
-                                "
-                            />
-                        </td>
-                        <td
-                            class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
-                        >
-                            <div class="flex items-center">
+                    <div class="flex items-start gap-3">
+                        <Checkbox
+                            v-model="selected[file.id]"
+                            :checked="selected[file.id] || allSelected"
+                            @change="($event) => onSelectCheckboxChange(file)"
+                            @click.stop
+                        />
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-2">
                                 <FileIcon :file="file" />
-                                {{ file.name }}
+                                <span class="font-medium text-gray-900 truncate">{{ file.name }}</span>
                             </div>
-                        </td>
-                        <td
-                            class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
+                            <div class="text-xs text-gray-600">
+                                <div class="truncate">
+                                    <span class="font-medium">Path:</span> {{ file.path }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden md:block overflow-x-auto">
+                <table
+                    class="w-full text-sm text-left text-gray-500 rounded overflow-hidden shadow"
+                >
+                    <thead
+                        class="text-xs text-gray-700 uppercase tracking-wider bg-gray-200"
+                    >
+                        <tr>
+                            <th class="px-4 lg:px-6 py-3">
+                                <Checkbox
+                                    v-model:checked="allSelected"
+                                    @change="onSelectAllChange"
+                                />
+                            </th>
+                            <th class="px-4 lg:px-6 py-3">Name</th>
+                            <th class="px-4 lg:px-6 py-3">Path</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr
+                            class="border-b hover:bg-blue-100 cursor-pointer transition ease-in-out duration-200"
+                            :class="
+                                selected[file.id] || allSelected
+                                    ? 'bg-blue-50'
+                                    : 'bg-white'
+                            "
+                            v-for="file in allFiles.data"
+                            :key="file.id"
+                            @click="($event) => toggleFileSelect(file)"
                         >
-                            {{ file.path }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            <td
+                                class="pl-4 lg:pl-6 py-4 pr-0 font-medium tracking-wider text-gray-900"
+                            >
+                                <Checkbox
+                                    v-model="selected[file.id]"
+                                    :checked="selected[file.id] || allSelected"
+                                    @change="
+                                        ($event) => onSelectCheckboxChange(file)
+                                    "
+                                />
+                            </td>
+                            <td
+                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-gray-900"
+                            >
+                                <div class="flex items-center">
+                                    <FileIcon :file="file" />
+                                    <span class="truncate">{{ file.name }}</span>
+                                </div>
+                            </td>
+                            <td
+                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-gray-900"
+                            >
+                                <span class="truncate block max-w-xs">{{ file.path }}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <div
                 v-if="!allFiles.data.length"

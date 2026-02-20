@@ -9,12 +9,11 @@ import { Link } from "@inertiajs/vue3";
     >
         <div>
             <Link href="/" class="flex items-center justify-center">
-                <ApplicationLogo class="h-48 sm:h-56" />
-            </Link>
+<ApplicationLogo class="h-12 sm:h-20 md:h-28 lg:h-32 xl:h-40" />            </Link>
         </div>
 
         <div
-            class="w-full sm:max-w-md mt-2 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg"
+            class="w-full sm:max-w-md mt-4 sm:mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg"
         >
             <slot />
         </div>

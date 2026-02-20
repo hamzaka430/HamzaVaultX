@@ -172,27 +172,27 @@ onMounted(() => {
     <AuthenticatedLayout>
         <Head title="My Files" />
 
-        <nav class="flex items-center justify-between p-1 mb-3">
-            <ol class="inline-flex items-center space-x-1">
+        <nav class="flex flex-col sm:flex-row sm:items-center justify-between p-1 mb-3 gap-3">
+            <ol class="inline-flex items-center space-x-1 overflow-x-auto flex-nowrap">
                 <li
                     v-for="ancestor in ancestors.data"
                     :key="ancestor.id"
-                    class="inline-flex items-center"
+                    class="inline-flex items-center flex-shrink-0"
                 >
                     <Link
                         v-if="!ancestor.parent_id"
                         :href="route('myFiles')"
-                        class="flex items-center font-medium text-gray-700 hover:text-blue-600"
+                        class="flex items-center text-sm sm:text-base font-medium text-gray-700 hover:text-blue-600"
                     >
                         <HomeIcon class="w-4 h-4 mr-1" />
                         My Files
                     </Link>
 
                     <div v-else class="flex items-center">
-                        <ChevronRightIcon class="w-5 h-5" />
+                        <ChevronRightIcon class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                         <Link
                             :href="route('myFiles', { folder: ancestor.path })"
-                            class="font-medium text-gray-700 hover:text-blue-600"
+                            class="text-sm sm:text-base font-medium text-gray-700 hover:text-blue-600 truncate max-w-[150px] sm:max-w-none"
                         >
                             {{ ancestor.name }}
                         </Link>
@@ -200,131 +200,190 @@ onMounted(() => {
                 </li>
             </ol>
 
-            <div class="flex items-center">
-                <label class="flex items-center mr-3">
+            <div class="flex flex-wrap items-center gap-2">
+                <label class="flex items-center text-xs sm:text-sm">
                     <Checkbox
                         v-model:checked="onlyFavourites"
                         @change="showOnlyFavourites"
                         class="mr-2"
                     />
-                    Only Favorites
+                    <span class="whitespace-nowrap">Only Favorites</span>
                 </label>
 
-                <ShareFileButton
-                    :all-selected="allSelected"
-                    :selected-ids="selectedIds"
-                />
+                <div class="flex items-center gap-2">
+                    <ShareFileButton
+                        :all-selected="allSelected"
+                        :selected-ids="selectedIds"
+                    />
 
-                <DownloadFileButton
-                    :all="allSelected"
-                    :ids="selectedIds"
-                    class="mr-2"
-                />
+                    <DownloadFileButton
+                        :all="allSelected"
+                        :ids="selectedIds"
+                    />
 
-                <DeleteFileButton
-                    :delete-all="allSelected"
-                    :delete-ids="selectedIds"
-                    @delete="onDelete"
-                />
+                    <DeleteFileButton
+                        :delete-all="allSelected"
+                        :delete-ids="selectedIds"
+                        @delete="onDelete"
+                    />
+                </div>
             </div>
         </nav>
 
         <div class="flex-1 overflow-auto">
-            <table
-                class="w-full text-sm text-left text-gray-500 rounded overflow-hidden shadow"
-            >
-                <thead
-                    class="text-xs text-gray-700 uppercase tracking-wider bg-gray-200"
+            <!-- Mobile Card View -->
+            <div class="block md:hidden space-y-2">
+                <div
+                    v-for="file in allFiles.data"
+                    :key="file.id"
+                    class="bg-white rounded-lg shadow p-4 border border-gray-200"
+                    :class="
+                        selected[file.id] || allSelected
+                            ? 'ring-2 ring-blue-500 bg-blue-50'
+                            : ''
+                    "
+                    @click="($event) => toggleFileSelect(file)"
                 >
-                    <tr>
-                        <th class="px-6 py-3">
-                            <Checkbox
-                                v-model:checked="allSelected"
-                                @change="onSelectAllChange"
-                            />
-                        </th>
-                        <th class=""></th>
-                        <th class="pl-6 pr-0 py-3 w-7 max-w-7">Name</th>
-                        <th class="px-6 py-3" v-if="search">Path</th>
-                        <th class="px-6 py-3">Owner</th>
-                        <th class="px-6 py-3">Size</th>
-                        <th class="px-6 py-3">Last Modified</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <tr
-                        class="border-b hover:bg-blue-100 cursor-pointer transition ease-in-out duration-200"
-                        :class="
-                            selected[file.id] || allSelected
-                                ? 'bg-blue-50'
-                                : 'bg-white'
-                        "
-                        v-for="file in allFiles.data"
-                        :key="file.id"
-                        @dblclick="openFolder(file)"
-                        @click="($event) => toggleFileSelect(file)"
-                    >
-                        <td
-                            class="pl-6 py-4 pr-0 w-7 max-w-7 font-medium tracking-wider text-gray-900 whitespace-nowrap"
-                        >
-                            <Checkbox
-                                v-model="selected[file.id]"
-                                :checked="selected[file.id] || allSelected"
-                                @change="
-                                    ($event) => onSelectCheckboxChange(file)
-                                "
-                            />
-                        </td>
-                        <td
-                            class="py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
-                        >
-                            <div
-                                class="flex items-center"
-                                @click.stop.prevent="toggleFavourite(file)"
-                            >
-                                <StarOutlineIcon
-                                    v-if="!file.is_favourite"
-                                    class="w-4 h-4"
-                                />
-                                <StarSolidIcon
-                                    v-else
-                                    class="w-4 h-4 text-yellow-500"
-                                />
-                            </div>
-                        </td>
-                        <td
-                            class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
-                        >
-                            <div class="flex items-center">
+                    <div class="flex items-start gap-3">
+                        <Checkbox
+                            v-model="selected[file.id]"
+                            :checked="selected[file.id] || allSelected"
+                            @change="($event) => onSelectCheckboxChange(file)"
+                            @click.stop
+                        />
+                        <div class="flex-1 min-w-0" @dblclick="openFolder(file)">
+                            <div class="flex items-center gap-2 mb-2">
                                 <FileIcon :file="file" />
-                                {{ file.name }}
+                                <span class="font-medium text-gray-900 truncate">{{ file.name }}</span>
+                                <button
+                                    @click.stop.prevent="toggleFavourite(file)"
+                                    class="flex-shrink-0"
+                                >
+                                    <StarOutlineIcon
+                                        v-if="!file.is_favourite"
+                                        class="w-5 h-5 text-gray-400 hover:text-yellow-500"
+                                    />
+                                    <StarSolidIcon
+                                        v-else
+                                        class="w-5 h-5 text-yellow-500"
+                                    />
+                                </button>
                             </div>
-                        </td>
-                        <td
-                            v-if="search"
-                            class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
+                            <div class="text-xs text-gray-600 space-y-1">
+                                <div v-if="search" class="truncate">
+                                    <span class="font-medium">Path:</span> {{ file.path }}
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span><span class="font-medium">Owner:</span> {{ file.owner }}</span>
+                                    <span><span class="font-medium">Size:</span> {{ file.size }}</span>
+                                </div>
+                                <div class="text-gray-500">
+                                    {{ file.updated_at }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden md:block overflow-x-auto">
+                <table
+                    class="w-full text-sm text-left text-gray-500 rounded overflow-hidden shadow"
+                >
+                    <thead
+                        class="text-xs text-gray-700 uppercase tracking-wider bg-gray-200"
+                    >
+                        <tr>
+                            <th class="px-4 lg:px-6 py-3">
+                                <Checkbox
+                                    v-model:checked="allSelected"
+                                    @change="onSelectAllChange"
+                                />
+                            </th>
+                            <th class="px-2"></th>
+                            <th class="pl-2 pr-4 lg:pr-6 py-3">Name</th>
+                            <th class="px-4 lg:px-6 py-3" v-if="search">Path</th>
+                            <th class="px-4 lg:px-6 py-3">Owner</th>
+                            <th class="px-4 lg:px-6 py-3">Size</th>
+                            <th class="px-4 lg:px-6 py-3">Last Modified</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr
+                            class="border-b hover:bg-blue-100 cursor-pointer transition ease-in-out duration-200"
+                            :class="
+                                selected[file.id] || allSelected
+                                    ? 'bg-blue-50'
+                                    : 'bg-white'
+                            "
+                            v-for="file in allFiles.data"
+                            :key="file.id"
+                            @dblclick="openFolder(file)"
+                            @click="($event) => toggleFileSelect(file)"
                         >
-                            {{ file.path }}
-                        </td>
-                        <td
-                            class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
-                        >
-                            {{ file.owner }}
-                        </td>
-                        <td
-                            class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
-                        >
-                            {{ file.size }}
-                        </td>
-                        <td
-                            class="px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
-                        >
-                            {{ file.updated_at }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            <td
+                                class="pl-4 lg:pl-6 py-4 pr-0 font-medium tracking-wider text-gray-900"
+                            >
+                                <Checkbox
+                                    v-model="selected[file.id]"
+                                    :checked="selected[file.id] || allSelected"
+                                    @change="
+                                        ($event) => onSelectCheckboxChange(file)
+                                    "
+                                />
+                            </td>
+                            <td
+                                class="py-4 font-medium tracking-wider text-gray-900"
+                            >
+                                <div
+                                    class="flex items-center"
+                                    @click.stop.prevent="toggleFavourite(file)"
+                                >
+                                    <StarOutlineIcon
+                                        v-if="!file.is_favourite"
+                                        class="w-4 h-4"
+                                    />
+                                    <StarSolidIcon
+                                        v-else
+                                        class="w-4 h-4 text-yellow-500"
+                                    />
+                                </div>
+                            </td>
+                            <td
+                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-gray-900"
+                            >
+                                <div class="flex items-center">
+                                    <FileIcon :file="file" />
+                                    <span class="truncate">{{ file.name }}</span>
+                                </div>
+                            </td>
+                            <td
+                                v-if="search"
+                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-gray-900"
+                            >
+                                <span class="truncate block max-w-xs">{{ file.path }}</span>
+                            </td>
+                            <td
+                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
+                            >
+                                {{ file.owner }}
+                            </td>
+                            <td
+                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
+                            >
+                                {{ file.size }}
+                            </td>
+                            <td
+                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-gray-900 whitespace-nowrap"
+                            >
+                                {{ file.updated_at }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <div
                 v-if="!allFiles.data.length"

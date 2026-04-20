@@ -129,38 +129,50 @@ onMounted(() => {
                 </li>
             </ol>
 
-            <div class="flex items-center gap-2">
-                <DownloadFileButton
-                    :all="allSelected"
-                    :ids="selectedIds"
-                    :shared-with-me="true"
-                />
+            <div class="flex flex-wrap items-center gap-4 sm:gap-2">
+                <label class="flex md:hidden items-center text-xs sm:text-sm">
+                    <Checkbox
+                        v-model:checked="allSelected"
+                        @change="onSelectAllChange"
+                        class="mr-2"
+                    />
+                    <span class="whitespace-nowrap">Select All</span>
+                </label>
+
+                <div class="flex items-center gap-2">
+                    <DownloadFileButton
+                        :all="allSelected"
+                        :ids="selectedIds"
+                        :shared-with-me="true"
+                    />
+                </div>
             </div>
         </nav>
 
         <div class="flex-1 overflow-auto">
             <!-- Mobile Card View -->
-            <div class="block md:hidden space-y-2">
+            <div class="block md:hidden space-y-3 px-1 pt-2 pb-4">
                 <div
                     v-for="file in allFiles.data"
                     :key="file.id"
-                    class="bg-white rounded-lg shadow p-4 border border-gray-200"
+                    class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 transition-all duration-200"
                     :class="
                         selected[file.id] || allSelected
-                            ? 'ring-2 ring-blue-500 bg-blue-50'
-                            : ''
+                            ? 'ring-2 ring-blue-500/50 bg-blue-50/50'
+                            : 'hover:bg-gray-50'
                     "
                     @click="($event) => toggleFileSelect(file)"
                 >
-                    <div class="flex items-start gap-3">
+                    <div class="flex items-start gap-4">
                         <Checkbox
                             v-model="selected[file.id]"
                             :checked="selected[file.id] || allSelected"
                             @change="($event) => onSelectCheckboxChange(file)"
                             @click.stop
+                            class="mt-1"
                         />
                         <div class="flex-1 min-w-0" @dblclick="openNote(file)">
-                            <div class="flex items-center gap-2 mb-2">
+                            <div class="flex items-center gap-3 mb-2">
                                 <FileIcon :file="file" />
                                 <span class="font-medium text-gray-900 truncate">{{ file.name }}</span>
                             </div>

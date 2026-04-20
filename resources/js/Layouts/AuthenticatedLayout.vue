@@ -116,7 +116,7 @@ const closeSidebar = () => {
 
             <template v-else>
                 <!-- Header with Mobile Menu Button -->
-                <div class="flex items-center justify-between w-full gap-2">
+                <div class="flex items-center justify-between w-full gap-2 py-2 sm:py-3 px-1">
                     <!-- Mobile Menu Button -->
                     <button
                         @click="toggleSidebar"

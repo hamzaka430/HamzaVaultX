@@ -8,11 +8,11 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
     <Menu as="div" class="relative inline-block text-left z-10">
         <div>
             <MenuButton
-                class="inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
+                class="inline-flex w-full items-center justify-center rounded-md px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
             >
-                {{ $page.props.auth.user.name }}
+                <span class="truncate max-w-[100px] sm:max-w-none">{{ $page.props.auth.user.name }}</span>
                 <ChevronDownIcon
-                    class="-mr-1 ml-2 h-5 w-5 text-gray-800"
+                    class="-mr-1 ml-1 sm:ml-2 h-4 w-4 sm:h-5 sm:w-5 text-gray-800 flex-shrink-0"
                     aria-hidden="true"
                 />
             </MenuButton>

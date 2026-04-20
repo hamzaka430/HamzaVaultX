@@ -28,9 +28,9 @@ const handleNavClick = () => {
         <!-- Logo Section - Desktop -->
         <Link
             :href="route('myFiles')"
-            class="flex items-center justify-center pt-4 border-b border-gray-100"
+            class="flex items-center justify-center pt-5 pb-5 border-b border-gray-100"
         >
-            <ApplicationLogo class="w-40 xl:w-44 h-auto" />
+            <ApplicationLogo class="w-32 lg:w-40 xl:w-48 h-auto object-contain" />
         </Link>
 
         <!-- Navigation Content -->
@@ -76,9 +76,9 @@ const handleNavClick = () => {
         ]"
     >
         <!-- Mobile Header -->
-        <div class="relative flex items-center justify-center pt-4 border-b border-gray-100">
-            <Link :href="route('myFiles')" @click="handleNavClick" class="flex items-center justify-center">
-                <ApplicationLogo class="w-36 h-auto" />
+        <div class="relative flex items-center justify-center pt-5 pb-5 border-b border-gray-100">
+            <Link :href="route('myFiles')" @click="handleNavClick" class="flex items-center justify-center w-full">   
+                <ApplicationLogo class="w-32 sm:w-40 h-auto object-contain" />
             </Link>
             <button
                 @click="$emit('close')"

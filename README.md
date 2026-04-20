@@ -10,6 +10,199 @@ HamzaVaultX is a full-stack SaaS application that provides secure file storage a
 
 ## ✨ Features
 
+- 📁 **File Management** - Upload, organize, and manage files in folders
+- 🗂️ **Folder Hierarchy** - Create nested folder structures
+- 🔗 **File Sharing** - Share files and folders with other users seamlessly
+- ⭐ **Favorites** - Star/favorite important files for quick access
+- 🗑️ **Trash & Restore** - Soft delete files with a robust recycle bin and restore capability
+- 📱 **Mobile Responsive** - Highly optimized UI/UX for all screen sizes (card views on mobile, table views on desktop)
+- 👁️ **File Icon Preview** - Automatic icon assignment based on file mime types
+- 📥 **Bulk Downloads** - Download multiple files and folders as ZIP
+- ☁️ **Cloud Storage** - Cloudflare R2 (S3-compatible) integration for fast, scalable storage
+
+## 🛠️ Tech Stack
+
+### Backend
+- **Framework:** Laravel 11
+- **Database:** PostgreSQL (Heroku Postgres)
+- **Storage:** Cloudflare R2 (S3-compatible)
+- **Authentication:** Laravel Sanctum
+- **API:** Inertia.js (SPA without REST API)
+
+### Frontend
+- **Framework:** Vue 3 (Composition API)
+- **Routing:** Inertia.js
+- **Styling:** Tailwind CSS
+- **Build Tool:** Vite
+- **Icons:** Heroicons
+
+### DevOps
+- **Platform:** Heroku (heroku-24 stack)
+- **Process Manager:** Heroku Procfile
+- **Deployment:** Git-based deployment with custom `app.json`
+
+## 🏗️ Architecture Overview
+
+```text
+┌──────────────────────────────────────────────┐
+│                 Client Layer                 │
+│  Vue 3 + Inertia.js + Tailwind CSS + Vite    │
+└──────────────────────┬───────────────────────┘
+                       │ HTTP/HTTPS
+┌──────────────────────▼───────────────────────┐
+│              Application Layer               │
+│  Laravel 11 + Inertia Server-Side + Sanctum  │
+└──────────────────────┬───────────────────────┘
+                       │
+        ┌──────────────┴──────────────┐
+┌───────▼────────┐             ┌──────▼────────┐
+│   PostgreSQL   │             │ Cloudflare R2 │
+│  (Heroku PG)   │             │(Object Storage)│
+└────────────────┘             └───────────────┘
+```
+
+## 🚀 Local Setup
+
+### Prerequisites
+
+- PHP 8.2+
+- Composer
+- Node.js 18+ & npm
+- PostgreSQL 13+ (or MySQL 8+)
+- Cloudflare R2 account (or AWS S3)
+
+### Installation Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/hamzaka430/HamzaVaultX.git
+   cd HamzaVaultX
+   ```
+
+2. **Install PHP dependencies**
+   ```bash
+   composer install
+   ```
+
+3. **Install Node dependencies**
+   ```bash
+   npm install
+   ```
+
+4. **Environment configuration**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+5. **Configure your `.env` file** 
+   Set your database credentials and Cloudflare R2 variables.
+
+6. **Run migrations**
+   ```bash
+   php artisan migrate
+   ```
+
+7. **Build frontend assets**
+   ```bash
+   npm run build
+   ```
+
+8. **Start development servers**
+
+   Terminal 1 (Laravel):
+   ```bash
+   php artisan serve
+   ```
+
+   Terminal 2 (Vite):
+   ```bash
+   npm run dev
+   ```
+
+9. **Access the application**
+   ```
+   http://localhost:8000
+   ```
+
+## ☁️ Heroku Deployment
+
+The app is fully configured for Heroku out of the box using `Procfile` and `app.json`.
+
+1. **Login to Heroku CLI**
+   ```bash
+   heroku login
+   ```
+
+2. **Create App & Attach PostgreSQL**
+   ```bash
+   heroku create hamzavaultx
+   heroku addons:create heroku-postgresql:essential-0
+   ```
+
+3. **Configure Environment Variables**
+   ```bash
+   heroku config:set APP_ENV=production
+   heroku config:set APP_DEBUG=false
+   heroku config:set APP_KEY=$(php artisan key:generate --show)
+   heroku config:set FILESYSTEM_DISK=r2
+   
+   # R2 Configuration
+   heroku config:set AWS_ACCESS_KEY_ID=your_key
+   heroku config:set AWS_SECRET_ACCESS_KEY=your_secret
+   heroku config:set AWS_BUCKET=your_bucket
+   heroku config:set AWS_ENDPOINT=your_endpoint
+   ```
+
+4. **Deploy to Heroku**
+   ```bash
+   git push heroku main
+   ```
+
+5. **Subsequent Deployments**
+   ```bash
+   npm run build  # ensure assets are built natively before pushing or let Heroku handle it
+   git add .
+   git commit -m "Deployment update"
+   git push heroku main
+   ```
+
+## ☁️ Cloudflare R2 Configuration
+
+1. Create a new bucket in the Cloudflare Dashboard (e.g., `hamzavaultx-prod`).
+2. Go to **Manage R2 API Tokens** and create a token with **Edit** permissions.
+3. Update `.env` or Heroku Config Vars:
+   ```env
+   AWS_ACCESS_KEY_ID=your_access_key_id
+   AWS_SECRET_ACCESS_KEY=your_secret_access_key
+   AWS_DEFAULT_REGION=auto
+   AWS_BUCKET=hamzavaultx-prod
+   AWS_ENDPOINT=https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+   AWS_USE_PATH_STYLE_ENDPOINT=false
+   FILESYSTEM_DISK=r2
+   ```
+
+## 💻 Author
+
+**Hamza**
+
+- GitHub: [@hamzaka430](https://github.com/hamzaka430)
+- Repository: [HamzaVaultX](https://github.com/hamzaka430/HamzaVaultX)
+
+---
+
+**Built with ❤️ using Laravel, Vue, and Inertia.js**# HamzaVaultX
+
+> A production-ready cloud storage platform built with modern web technologies
+
+HamzaVaultX is a full-stack SaaS application that provides secure file storage and sharing capabilities, similar to Google Drive. Built with Laravel 11, Vue 3, and Inertia.js, it leverages Cloudflare R2 for scalable object storage and deploys seamlessly on Heroku.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?logo=laravel)](https://laravel.com)
+[![Vue](https://img.shields.io/badge/Vue-3.x-4FC08D?logo=vue.js)](https://vuejs.org)
+
+## ✨ Features
+
 - 🔐 **Secure Authentication** - Laravel Sanctum-powered user authentication
 - 📁 **File Management** - Upload, organize, and manage files in folders
 - 🗂️ **Folder Hierarchy** - Create nested folder structures

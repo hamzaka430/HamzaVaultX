@@ -150,18 +150,6 @@ onMounted(() => {
         <div class="flex-1 overflow-auto">
             <!-- Mobile Card View -->
             <div class="block md:hidden space-y-3 px-1 pt-2 pb-4">
-                <!-- Mobile Select All -->
-                <div class="flex items-center px-4 py-3 bg-white rounded-xl shadow-sm border border-gray-200 mb-4 transition-all duration-200" :class="allSelected ? 'ring-2 ring-blue-500/50 bg-blue-50/50' : ''">
-                    <label class="flex items-center w-full cursor-pointer gap-4">
-                        <Checkbox
-                            v-model="allSelected"
-                            @change="onSelectAllChange"
-                            class="mt-0.5"
-                        />
-                        <span class="text-sm font-medium" :class="allSelected ? 'text-blue-900' : 'text-gray-700'">Select All</span>
-                    </label>
-                </div>
-
                 <div
                     v-for="file in allFiles.data"
                     :key="file.id"

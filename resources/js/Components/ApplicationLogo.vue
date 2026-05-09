@@ -1,3 +1,3 @@
 <template>
-    <img src="/logo.png" alt="HamzaVaultX" />
+    <img src="/logo.svg" alt="HamzaVaultX" />
 </template>

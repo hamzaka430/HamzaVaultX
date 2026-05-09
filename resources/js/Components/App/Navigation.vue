@@ -65,6 +65,18 @@ const handleNavClick = () => {
                     Trash
                 </NavLink>
             </nav>
+
+            <!-- Footer Section - Desktop -->
+            <div class="px-4 py-4 mt-auto border-t border-gray-100 mb-[50px]">
+                <p class="text-xs text-center text-gray-500 font-medium">
+                    Developed and designed by 
+                    <br />
+                    <span class="text-indigo-600 font-semibold">Hamza Zaka</span> for 
+                    <a href="https://dezignwise.com" target="_blank" class="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
+                        DezignWise
+                    </a>
+                </p>
+            </div>
         </div>
     </nav>
 
@@ -125,6 +137,18 @@ const handleNavClick = () => {
                     Trash
                 </NavLink>
             </nav>
+
+            <!-- Footer Section - Mobile -->
+            <div class="px-4 py-4 mt-auto border-t border-gray-100 mb-[50px]">
+                <p class="text-xs text-center text-gray-500 font-medium">
+                    Developed and designed by 
+                    <br />
+                    <span class="text-indigo-600 font-semibold">Hamza Zaka</span> for 
+                    <a href="https://dezignwise.com" target="_blank" class="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
+                        DezignWise
+                    </a>
+                </p>
+            </div>
         </div>
     </nav>
 </template>

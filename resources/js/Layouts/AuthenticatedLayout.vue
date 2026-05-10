@@ -137,7 +137,7 @@ const closeSidebar = () => {
                     <!-- Global Footer -->
                     <footer class="mt-auto py-4 border-t border-gray-200">
                         <p class="text-sm text-center text-gray-500 font-medium">
-                            Design and Developed by <a href="https://dezignwise.com" target="_blank" class="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">DezignWise</a>
+                            Design and Developed by <a href="https://dezignwise.online" target="_blank" class="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">DezignWise</a>
                         </p>
                     </footer>
                 </div>

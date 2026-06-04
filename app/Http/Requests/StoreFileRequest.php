@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\File;
-
 class StoreFileRequest extends ParentIdBaseRequest
 {
     /**
@@ -98,38 +96,10 @@ class StoreFileRequest extends ParentIdBaseRequest
             'files.*' => [
                 'required',
                 'file',
-                function ($attributes, $value, $fail) {
-                    if (! $this->folder_name) {
-                        $file = File::query()
-                            ->where('name', $value->getClientOriginalName())
-                            ->where('created_by', auth()->id())
-                            ->where('parent_id', $this->parent_id)
-                            ->whereNull('deleted_at')
-                            ->exists();
-
-                        if ($file) {
-                            $fail("File {$value->getClientOriginalName()} already exists.");
-                        }
-                    }
-                },
             ],
             'folder_name' => [
                 'nullable',
                 'string',
-                function ($attributes, $value, $fail) {
-                    if ($value) {
-                        $file = File::query()
-                            ->where('name', $value)
-                            ->where('created_by', auth()->id())
-                            ->where('parent_id', $this->parent_id)
-                            ->whereNull('deleted_at')
-                            ->exists();
-
-                        if ($file) {
-                            $fail("Folder {$value} already exists.");
-                        }
-                    }
-                },
             ],
         ]);
     }

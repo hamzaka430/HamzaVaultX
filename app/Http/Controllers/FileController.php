@@ -16,6 +16,7 @@ use App\Models\File;
 use App\Models\FileShare;
 use App\Models\StarredFile;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
@@ -144,13 +145,38 @@ class FileController extends Controller
             $parent = $this->getRoot();
         }
 
+        $savedCount = 0;
+        $skippedCount = 0;
+
         if (! empty($fileTree)) {
-            $this->saveFileTree($fileTree, $parent, $user);
+            [$savedCount, $skippedCount] = $this->saveFileTree($fileTree, $parent, $user);
         } else {
             foreach ($payload['files'] as $file) {
+                if ($this->fileAlreadyExists($parent, $file->getClientOriginalName(), $user)) {
+                    $skippedCount++;
+                    continue;
+                }
+
                 $this->saveFile($file, $parent, $user);
+                $savedCount++;
             }
         }
+
+        if ($savedCount === 0) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'files' => 'No files could be uploaded. Remove the duplicate or problematic file and try again.',
+            ]);
+        }
+
+        $message = $savedCount === 1
+            ? '1 file uploaded successfully.'
+            : "{$savedCount} files uploaded successfully.";
+
+        if ($skippedCount > 0) {
+            $message .= " {$skippedCount} file(s) were skipped because they already existed.";
+        }
+
+        return back()->with('message', $message);
     }
 
     /**
@@ -186,19 +212,60 @@ class FileController extends Controller
      */
     public function saveFileTree($tree, $parent, $user)
     {
+        $savedCount = 0;
+        $skippedCount = 0;
+
         foreach ($tree as $name => $file) {
             if (is_array($file)) {
-                $folder = new File();
-                $folder->is_folder = true;
-                $folder->name = $name;
+                [$folder, $created] = $this->resolveFolder($parent, $name, $user);
+                [$childSavedCount, $childSkippedCount] = $this->saveFileTree($file, $folder, $user);
 
-                $parent->appendNode($folder);
+                if ($created && $childSavedCount === 0) {
+                    $folder->deleteForever();
+                }
 
-                $this->saveFileTree($file, $folder, $user);
+                $savedCount += $childSavedCount;
+                $skippedCount += $childSkippedCount;
             } else {
+                if ($this->fileAlreadyExists($parent, $file->getClientOriginalName(), $user)) {
+                    $skippedCount++;
+                    continue;
+                }
+
                 $this->saveFile($file, $parent, $user);
+                $savedCount++;
             }
         }
+
+        return [$savedCount, $skippedCount];
+    }
+
+    /**
+     * Resolve an existing folder or create a new one.
+     *
+     * @return array{0:\App\Models\File,1:bool}
+     */
+    private function resolveFolder($parent, $name, $user)
+    {
+        $existingFolder = File::query()
+            ->where('created_by', $user->id)
+            ->where('parent_id', $parent->id)
+            ->where('name', $name)
+            ->where('is_folder', true)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($existingFolder) {
+            return [$existingFolder, false];
+        }
+
+        $folder = new File();
+        $folder->is_folder = true;
+        $folder->name = $name;
+
+        $parent->appendNode($folder);
+
+        return [$folder, true];
     }
 
     /**
@@ -220,6 +287,19 @@ class FileController extends Controller
         $model->mime = $file->getMimeType();
         $model->size = $file->getSize();
         $parent->appendNode($model);
+    }
+
+    /**
+     * Determine whether a file already exists in the given folder.
+     */
+    private function fileAlreadyExists($parent, $name, $user)
+    {
+        return File::query()
+            ->where('created_by', $user->id)
+            ->where('parent_id', $parent->id)
+            ->where('name', $name)
+            ->whereNull('deleted_at')
+            ->exists();
     }
 
     /**
@@ -572,6 +652,15 @@ class FileController extends Controller
                 'type' => 'note',
                 'name' => $file->name,
                 'content' => $file->note_content ?? '',
+            ]);
+        }
+
+        if ($file->mime && str_starts_with($file->mime, 'text/')) {
+            return response()->json([
+                'type' => 'text',
+                'name' => $file->name,
+                'mime' => $file->mime,
+                'content' => $file->storage_path ? Storage::disk('r2')->get($file->storage_path) : '',
             ]);
         }
 

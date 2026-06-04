@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import Navigation from "@/Components/App/Navigation.vue";
 import SearchForm from "@/Components/App/SearchForm.vue";
 import UserSettingsDropDown from "@/Components/App/UserSettingsDropDown.vue";
@@ -22,6 +22,24 @@ const sidebarOpen = ref(false);
 onMounted(() => {
     emitter.on(FILE_UPLOAD_STARTED, uploadFiles);
 });
+
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (!flash) {
+            return;
+        }
+
+        if (flash.message) {
+            showSuccessNotification(flash.message);
+        }
+
+        if (flash.error) {
+            showErrorDialog(flash.error);
+        }
+    },
+    { deep: true }
+);
 
 const fileUploadForm = useForm({
     files: [],
@@ -46,18 +64,20 @@ const onDragLeave = () => {
 };
 
 const uploadFiles = (files) => {
+    const selectedFiles = Array.from(files);
+
+    if (!selectedFiles.length) {
+        showErrorDialog("Please select at least one file to upload.");
+        return;
+    }
+
     fileUploadForm.parent_id = page.props.rootFolder.id;
-    fileUploadForm.files = files;
-    fileUploadForm.relative_paths = [...files].map(
+    fileUploadForm.files = selectedFiles;
+    fileUploadForm.relative_paths = selectedFiles.map(
         (file) => file.webkitRelativePath
     );
 
     fileUploadForm.post(route("files.store"), {
-        onSuccess: () => {
-            showSuccessNotification(
-                `${files.length} files have been uploaded.`
-            );
-        },
         onError: (errors) => {
             let message = "";
 

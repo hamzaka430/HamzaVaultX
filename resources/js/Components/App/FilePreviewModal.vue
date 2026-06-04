@@ -56,7 +56,7 @@ const loadPreview = async () => {
 };
 
 const closeModal = () => {
-    emit("update:modelValue");
+    emit("update:modelValue", false);
 };
 
 const downloadFile = () => {
@@ -151,6 +151,25 @@ const editNote = () => {
                             Edit Note
                         </SecondaryButton>
                     </div>
+                </div>
+
+                <!-- Text Preview -->
+                <div v-else-if="previewType === 'text' && previewData" class="bg-gray-50 rounded-lg p-6 min-h-[50vh] max-h-[70vh] overflow-auto">
+                    <pre class="whitespace-pre-wrap font-sans text-gray-800">{{ previewData.content }}</pre>
+                </div>
+
+                <!-- Generic File Preview -->
+                <div v-else-if="previewData?.url" class="space-y-4">
+                    <div class="rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
+                        <iframe
+                            :src="previewData.url"
+                            class="w-full h-[70vh] border-0"
+                            :title="`${file?.name} preview`"
+                        ></iframe>
+                    </div>
+                    <p class="text-sm text-gray-500">
+                        If the file does not render in-browser, use Download to open it locally.
+                    </p>
                 </div>
 
                 <!-- No Preview Available -->

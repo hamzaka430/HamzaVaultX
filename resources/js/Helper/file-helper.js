@@ -66,14 +66,14 @@ export const isText = (file) => {
 };
 
 export const canPreview = (file) => {
-    if (file.type === 'note') return true;
-    return isImage(file) || isPDF(file) || isVideo(file);
+    return !file.is_folder;
 };
 
 export const getPreviewType = (file) => {
     if (file.type === 'note') return 'note';
+    if (isText(file)) return 'text';
     if (isImage(file)) return 'image';
     if (isPDF(file)) return 'pdf';
     if (isVideo(file)) return 'video';
-    return null;
+    return 'file';
 };

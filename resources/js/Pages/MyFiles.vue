@@ -7,7 +7,7 @@ import {
     StarIcon as StarSolidIcon,
 } from "@heroicons/vue/20/solid";
 import FileIcon from "@/Components/App/FileIcon.vue";
-import { ref, onMounted, onUpdated, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { httpGet, httpPost } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
 import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
@@ -37,6 +37,7 @@ const editNoteModal = ref(false);
 const selectedNote = ref(null);
 const previewModal = ref(false);
 const previewFile = ref(null);
+const scrollContainer = ref(null);
 
 const selectedIds = computed(() => {
     return Object.entries(selected.value)
@@ -137,13 +138,6 @@ const showOnlyFavourites = () => {
     return router.get(route("myFiles"), { favourites: 1 });
 };
 
-onUpdated(() => {
-    allFiles.value = {
-        data: props.files.data,
-        next: props.files.links.next,
-    };
-});
-
 const loadMoreIntersect = ref(null);
 const page = usePage();
 let search = ref("");
@@ -160,7 +154,8 @@ onMounted(() => {
             entries.forEach((entry) => entry.isIntersecting && loadMore());
         },
         {
-            rootMargin: "-250px 0px 0px 0px",
+            root: scrollContainer.value,
+            rootMargin: "0px 0px 250px 0px",
         }
     );
 
@@ -241,7 +236,7 @@ onMounted(() => {
             </div>
         </nav>
 
-        <div class="flex-1 overflow-auto">
+        <div ref="scrollContainer" class="flex-1 overflow-auto">
             <!-- Mobile Card View -->
             <div class="block md:hidden space-y-3 px-1 pt-2 pb-4">
                 <div

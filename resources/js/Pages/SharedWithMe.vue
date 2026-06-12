@@ -2,7 +2,7 @@
 import { Head, Link, router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import FileIcon from "@/Components/App/FileIcon.vue";
-import { ref, onMounted, onUpdated, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { httpGet } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
 import DownloadFileButton from "@/Components/App/DownloadFileButton.vue";
@@ -28,6 +28,7 @@ const editNoteModal = ref(false);
 const selectedNote = ref(null);
 const previewModal = ref(false);
 const previewFile = ref(null);
+const scrollContainer = ref(null);
 
 const selectedIds = computed(() => {
     return Object.entries(selected.value)
@@ -91,13 +92,6 @@ const resetForm = () => {
     selected.value = {};
 };
 
-onUpdated(() => {
-    allFiles.value = {
-        data: props.files.data,
-        next: props.files.links.next,
-    };
-});
-
 const loadMoreIntersect = ref(null);
 onMounted(() => {
     const observer = new IntersectionObserver(
@@ -105,7 +99,8 @@ onMounted(() => {
             entries.forEach((entry) => entry.isIntersecting && loadMore());
         },
         {
-            rootMargin: "-250px 0px 0px 0px",
+            root: scrollContainer.value,
+            rootMargin: "0px 0px 250px 0px",
         }
     );
 
@@ -149,7 +144,7 @@ onMounted(() => {
             </div>
         </nav>
 
-        <div class="flex-1 overflow-auto">
+        <div ref="scrollContainer" class="flex-1 overflow-auto">
             <!-- Mobile Card View -->
             <div class="block md:hidden space-y-3 px-1 pt-2 pb-4">
                 <div

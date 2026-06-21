@@ -77,10 +77,10 @@ const editNote = () => {
 
 <template>
     <Modal :show="modelValue" @close="closeModal" max-width="6xl">
-        <div class="bg-white rounded-lg">
+        <div class="bg-canvas rounded-lg">
             <!-- Header -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900 truncate max-w-md">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-hairline">
+                <h3 class="font-sans text-h5 font-medium text-ink truncate max-w-md">
                     {{ file?.name }}
                 </h3>
                 <div class="flex items-center gap-2">
@@ -93,7 +93,7 @@ const editNote = () => {
                     </PrimaryButton>
                     <button
                         @click="closeModal"
-                        class="text-gray-400 hover:text-gray-600 transition"
+                        class="text-ink-mute hover:text-ink transition"
                     >
                         <XMarkIcon class="w-6 h-6" />
                     </button>
@@ -104,7 +104,7 @@ const editNote = () => {
             <div class="p-6">
                 <!-- Loading State -->
                 <div v-if="loading" class="flex items-center justify-center h-96">
-                    <div class="text-gray-500">Loading preview...</div>
+                    <div class="font-sans text-body-md text-ink-mute">Loading preview...</div>
                 </div>
 
                 <!-- Error State -->
@@ -143,8 +143,8 @@ const editNote = () => {
 
                 <!-- Note Preview -->
                 <div v-else-if="previewType === 'note' && previewData" class="space-y-4">
-                    <div class="bg-gray-50 rounded-lg p-6 min-h-[50vh] max-h-[70vh] overflow-auto">
-                        <pre class="whitespace-pre-wrap font-sans text-gray-800">{{ previewData.content }}</pre>
+                    <div class="bg-canvas-soft rounded-lg p-6 min-h-[50vh] max-h-[70vh] overflow-auto">
+                        <pre class="whitespace-pre-wrap font-sans text-body-md text-ink">{{ previewData.content }}</pre>
                     </div>
                     <div class="flex justify-end">
                         <SecondaryButton @click="editNote">
@@ -154,27 +154,27 @@ const editNote = () => {
                 </div>
 
                 <!-- Text Preview -->
-                <div v-else-if="previewType === 'text' && previewData" class="bg-gray-50 rounded-lg p-6 min-h-[50vh] max-h-[70vh] overflow-auto">
-                    <pre class="whitespace-pre-wrap font-sans text-gray-800">{{ previewData.content }}</pre>
+                <div v-else-if="previewType === 'text' && previewData" class="bg-canvas-soft rounded-lg p-6 min-h-[50vh] max-h-[70vh] overflow-auto">
+                    <pre class="whitespace-pre-wrap font-sans text-body-md text-ink">{{ previewData.content }}</pre>
                 </div>
 
                 <!-- Generic File Preview -->
                 <div v-else-if="previewData?.url" class="space-y-4">
-                    <div class="rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
+                    <div class="rounded-lg border border-hairline bg-canvas-soft overflow-hidden">
                         <iframe
                             :src="previewData.url"
                             class="w-full h-[70vh] border-0"
                             :title="`${file?.name} preview`"
                         ></iframe>
                     </div>
-                    <p class="text-sm text-gray-500">
+                    <p class="font-sans text-caption text-ink-mute">
                         If the file does not render in-browser, use Download to open it locally.
                     </p>
                 </div>
 
                 <!-- No Preview Available -->
                 <div v-else class="flex items-center justify-center h-96">
-                    <div class="text-gray-500">Preview not available for this file type</div>
+                    <div class="font-sans text-body-md text-ink-mute">Preview not available for this file type</div>
                 </div>
             </div>
         </div>

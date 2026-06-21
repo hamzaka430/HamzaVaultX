@@ -204,16 +204,18 @@ HamzaVaultX is a full-stack SaaS application that provides secure file storage a
 ## ✨ Features
 
 - 🔐 **Secure Authentication** - Laravel Sanctum-powered user authentication
+- 🎨 **Supabase-Inspired UI** - Clean, modern monochrome aesthetic and sleek design
 - 📁 **File Management** - Upload, organize, and manage files in folders
+- 🛡️ **Robust Uploads** - Smart conflict resolution (auto-rename duplicates like `file (1).png`)
 - 🗂️ **Folder Hierarchy** - Create nested folder structures
 - 🔗 **File Sharing** - Share files and folders with other users
 - ⭐ **Favorites** - Star frequently accessed files
 - 🗑️ **Trash & Restore** - Soft delete with restore capability
 - 📝 **Text Notes** - Create and edit text notes directly in the app
 - 👁️ **File Preview** - Preview files before downloading
-- 📥 **Bulk Downloads** - Download multiple files and folders as ZIP
+- 📥 **Flexible Downloads** - Download multiple files and folders (toggle between ZIP or separate files)
 - 📊 **Storage Analytics** - Track storage usage per user
-- 🌐 **Responsive UI** - Mobile-first design with Tailwind CSS
+- 🌐 **Responsive UI** - Mobile-first design with Tailwind CSS and infinite scrolling
 - ☁️ **Cloud Storage** - Cloudflare R2 (S3-compatible) integration
 
 ## 🛠️ Tech Stack

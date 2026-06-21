@@ -27,11 +27,14 @@ class DownloadController extends Controller
             return ['message' => 'Please select at least one file or one folder to download.'];
         }
 
+        $zipName = $parent ? $parent->name : 'hamzavaultx';
+
         if ($all) {
-            return $this->downloadAsZip($parent->children, $parent->name.'.zip');
+            $children = $parent ? $parent->children : File::query()->where('created_by', auth()->id())->whereNull('parent_id')->get();
+            return $this->downloadAsZip($children, $zipName.'.zip');
         }
 
-        return $this->handleDownload($ids, $parent->name);
+        return $this->handleDownload($ids, $zipName);
     }
 
     /**

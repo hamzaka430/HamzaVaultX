@@ -3,7 +3,7 @@ import { Head, Link, router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { ChevronRightIcon, HomeIcon } from "@heroicons/vue/20/solid";
 import FileIcon from "@/Components/App/FileIcon.vue";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { httpGet } from "@/Helper/http-helper";
 import Checkbox from "@/Components/Checkbox.vue";
 import DeleteFileButton from "@/Components/App/DeleteFileButton.vue";
@@ -20,6 +20,13 @@ const props = defineProps({
 const allFiles = ref({
     data: props.files.data,
     next: props.files.links.next,
+});
+
+watch(() => props.files, (newFiles) => {
+    allFiles.value = {
+        data: newFiles.data,
+        next: newFiles.links.next,
+    };
 });
 
 const allSelected = ref(false);
@@ -40,14 +47,19 @@ const openFolder = (file) => {
     router.visit(route("myFiles", { folder: file.path }));
 };
 
+const isLoadingMore = ref(false);
+
 const loadMore = () => {
-    if (allFiles.value.next === null) {
+    if (allFiles.value.next === null || isLoadingMore.value) {
         return;
     }
 
+    isLoadingMore.value = true;
     httpGet(allFiles.value.next).then((res) => {
         allFiles.value.data = [...allFiles.value.data, ...res.data];
         allFiles.value.next = res.links.next;
+    }).finally(() => {
+        isLoadingMore.value = false;
     });
 };
 
@@ -92,7 +104,7 @@ onMounted(() => {
         },
         {
             root: scrollContainer.value,
-            rootMargin: "0px 0px 250px 0px",
+            rootMargin: "0px 0px 1000px 0px",
         }
     );
 
@@ -104,12 +116,12 @@ onMounted(() => {
     <AuthenticatedLayout>
         <Head title="Trash" />
 
-        <nav class="flex flex-col sm:flex-row sm:items-center justify-between p-1 mb-3 gap-3">
+        <nav class="flex flex-col sm:flex-row sm:items-center justify-between p-2 mb-0 gap-3 sticky top-0 z-30 bg-canvas border-b border-hairline">
             <ol class="inline-flex items-center space-x-1">
                 <li class="inline-flex items-center">
                     <Link
                         :href="route('trash')"
-                        class="flex items-center text-sm sm:text-base font-medium text-gray-700 hover:text-blue-600"
+                        class="flex items-center font-sans text-body-md font-medium text-ink-mute hover:text-ink"
                     >
                         Trash
                     </Link>
@@ -148,11 +160,11 @@ onMounted(() => {
                 <div
                     v-for="file in allFiles.data"
                     :key="file.id"
-                    class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 transition-all duration-200"
+                    class="bg-canvas rounded-lg shadow-elevation-1 p-4 border border-hairline transition-all duration-200"
                     :class="
                         selected[file.id] || allSelected
-                            ? 'ring-2 ring-blue-500/50 bg-blue-50/50'
-                            : 'hover:bg-gray-50'
+                            ? 'ring-1 ring-primary bg-canvas-soft'
+                            : 'hover:bg-canvas-soft'
                     "
                     @click="($event) => toggleFileSelect(file)"
                 >
@@ -167,7 +179,7 @@ onMounted(() => {
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-3 mb-2">
                                 <FileIcon :file="file" />
-                                <span class="font-medium text-gray-900 truncate">{{ file.name }}</span>
+                                <span class="font-sans text-body-md font-medium text-ink truncate">{{ file.name }}</span>
                             </div>
                             <div class="text-xs text-gray-600">
                                 <div class="truncate">
@@ -180,12 +192,12 @@ onMounted(() => {
             </div>
 
             <!-- Desktop Table View -->
-            <div class="hidden md:block overflow-x-auto">
+            <div class="hidden md:block">
                 <table
-                    class="w-full text-sm text-left text-gray-500 rounded overflow-hidden shadow"
+                    class="w-full font-sans text-body-md text-left text-ink-mute rounded shadow-elevation-1"
                 >
                     <thead
-                        class="text-xs text-gray-700 uppercase tracking-wider bg-gray-200"
+                        class="font-sans text-caption text-ink-mute uppercase tracking-wider bg-canvas border-b border-hairline sticky top-0 z-10 shadow-sm"
                     >
                         <tr>
                             <th class="px-4 lg:px-6 py-3">
@@ -201,18 +213,18 @@ onMounted(() => {
 
                     <tbody>
                         <tr
-                            class="border-b hover:bg-blue-100 cursor-pointer transition ease-in-out duration-200"
+                            class="border-b border-hairline hover:bg-canvas-soft cursor-pointer transition ease-in-out duration-200"
                             :class="
                                 selected[file.id] || allSelected
-                                    ? 'bg-blue-50'
-                                    : 'bg-white'
+                                    ? 'bg-canvas-soft'
+                                    : 'bg-canvas'
                             "
                             v-for="file in allFiles.data"
                             :key="file.id"
                             @click="($event) => toggleFileSelect(file)"
                         >
                             <td
-                                class="pl-4 lg:pl-6 py-4 pr-0 font-medium tracking-wider text-gray-900"
+                                class="pl-4 lg:pl-6 py-4 pr-0 font-medium tracking-wider text-ink"
                             >
                                 <Checkbox
                                     v-model="selected[file.id]"
@@ -223,15 +235,15 @@ onMounted(() => {
                                 />
                             </td>
                             <td
-                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-gray-900"
+                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-ink"
                             >
                                 <div class="flex items-center">
                                     <FileIcon :file="file" />
-                                    <span class="truncate">{{ file.name }}</span>
+                                    <span class="truncate inline-block max-w-[200px]" :title="file.name">{{ file.name }}</span>
                                 </div>
                             </td>
                             <td
-                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-gray-900"
+                                class="px-4 lg:px-6 py-4 font-medium tracking-wider text-ink"
                             >
                                 <span class="truncate block max-w-xs">{{ file.path }}</span>
                             </td>
@@ -242,7 +254,7 @@ onMounted(() => {
 
             <div
                 v-if="!allFiles.data.length"
-                class="text-center tracking-wide py-3 text-gray-700 bg-white shadow rounded-b"
+                class="text-center tracking-wide py-3 font-sans text-body-md text-ink-mute bg-canvas shadow-elevation-1 rounded-b-lg border-b border-hairline"
             >
                 No files or folders available in this directory.
             </div>

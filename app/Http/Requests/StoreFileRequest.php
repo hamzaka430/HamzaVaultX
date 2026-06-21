@@ -96,11 +96,30 @@ class StoreFileRequest extends ParentIdBaseRequest
             'files.*' => [
                 'required',
                 'file',
+                'max:51200',
+                function ($attribute, $value, $fail) {
+                    if ($value && str_starts_with($value->getMimeType(), 'video/')) {
+                        $fail('Video files are not allowed.');
+                    }
+                },
             ],
             'folder_name' => [
                 'nullable',
                 'string',
             ],
         ]);
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages(): array
+    {
+        return [
+            'files.*.max' => 'The file size cannot exceed 50MB.',
+            'files.*.file' => 'The file is invalid or could not be uploaded.',
+        ];
     }
 }

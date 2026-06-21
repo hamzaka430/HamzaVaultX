@@ -9,7 +9,7 @@
     }
 
     body {
-        @apply overflow-x-hidden;
+        @apply overflow-x-hidden bg-canvas text-ink text-body-md antialiased;
     }
 
     /* Prevent text from being too small on mobile */
@@ -32,7 +32,7 @@
     /* Custom scrollbar for better mobile UX */
     .custom-scrollbar {
         scrollbar-width: thin;
-        scrollbar-color: #cbd5e0 #f7fafc;
+        scrollbar-color: #dfdfdf #fafafa;
     }
 
     .custom-scrollbar::-webkit-scrollbar {
@@ -41,15 +41,15 @@
     }
 
     .custom-scrollbar::-webkit-scrollbar-track {
-        @apply bg-gray-100;
+        @apply bg-canvas-soft;
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        @apply bg-gray-400 rounded;
+        @apply bg-hairline rounded;
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        @apply bg-gray-500;
+        @apply bg-hairline-strong;
     }
 
     /* Touch-friendly minimum target sizes */

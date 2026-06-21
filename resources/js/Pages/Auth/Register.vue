@@ -26,10 +26,10 @@ const submit = () => {
 
         <!-- Page Title -->
         <div class="text-center mb-6">
-            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+            <h2 class="text-xl sm:text-2xl font-bold font-sans text-ink tracking-tight">
                 Create your account
             </h2>
-            <p class="mt-1 text-sm text-gray-600">
+            <p class="mt-1 font-sans text-body-md text-ink-mute">
                 Get started with your free account
             </p>
         </div>
@@ -38,11 +38,11 @@ const submit = () => {
         <form @submit.prevent="submit" class="space-y-4">
             <!-- Name Field -->
             <div>
-                <InputLabel for="name" value="Name" class="text-sm font-semibold text-gray-700" />
+                <InputLabel for="name" value="Name" class="font-sans text-body-md font-semibold text-ink" />
                 <TextInput
                     id="name"
                     type="text"
-                    class="mt-1.5 block w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    class="mt-1.5 block w-full px-3 py-2.5"
                     v-model="form.name"
                     required
                     autofocus
@@ -54,11 +54,11 @@ const submit = () => {
 
             <!-- Email Field -->
             <div>
-                <InputLabel for="email" value="Email" class="text-sm font-semibold text-gray-700" />
+                <InputLabel for="email" value="Email" class="font-sans text-body-md font-semibold text-ink" />
                 <TextInput
                     id="email"
                     type="email"
-                    class="mt-1.5 block w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    class="mt-1.5 block w-full px-3 py-2.5"
                     v-model="form.email"
                     required
                     autocomplete="username"
@@ -69,11 +69,11 @@ const submit = () => {
 
             <!-- Password Field -->
             <div>
-                <InputLabel for="password" value="Password" class="text-sm font-semibold text-gray-700" />
+                <InputLabel for="password" value="Password" class="font-sans text-body-md font-semibold text-ink" />
                 <TextInput
                     id="password"
                     type="password"
-                    class="mt-1.5 block w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    class="mt-1.5 block w-full px-3 py-2.5"
                     v-model="form.password"
                     required
                     autocomplete="new-password"
@@ -84,11 +84,11 @@ const submit = () => {
 
             <!-- Confirm Password Field -->
             <div>
-                <InputLabel for="password_confirmation" value="Confirm Password" class="text-sm font-semibold text-gray-700" />
+                <InputLabel for="password_confirmation" value="Confirm Password" class="font-sans text-body-md font-semibold text-ink" />
                 <TextInput
                     id="password_confirmation"
                     type="password"
-                    class="mt-1.5 block w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    class="mt-1.5 block w-full px-3 py-2.5"
                     v-model="form.password_confirmation"
                     required
                     autocomplete="new-password"
@@ -100,7 +100,7 @@ const submit = () => {
             <!-- Submit Button -->
             <div class="pt-1">
                 <PrimaryButton
-                    class="w-full justify-center px-4 py-2.5 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
+                    class="w-full justify-center py-2.5"
                     :class="{ 'opacity-50 cursor-not-allowed': form.processing }"
                     :disabled="form.processing"
                 >
@@ -110,11 +110,11 @@ const submit = () => {
 
             <!-- Login Link -->
             <div class="text-center pt-1">
-                <p class="text-sm text-gray-600">
+                <p class="font-sans text-body-md text-ink-mute">
                     Already have an account?
                     <Link
                         :href="route('login')"
-                        class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
+                        class="font-medium text-primary hover:text-primary-deep transition-colors"
                     >
                         Sign in
                     </Link>

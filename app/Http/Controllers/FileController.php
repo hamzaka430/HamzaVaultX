@@ -148,21 +148,28 @@ class FileController extends Controller
         $savedCount = 0;
         $skippedCount = 0;
 
+        \Log::info('storeFiles called', [
+            'fileTree_empty' => empty($fileTree),
+            'payload_files_count' => isset($payload['files']) ? count($payload['files']) : 0
+        ]);
+
         if (! empty($fileTree)) {
             [$savedCount, $skippedCount] = $this->saveFileTree($fileTree, $parent, $user);
+            \Log::info('saveFileTree returned', ['savedCount' => $savedCount]);
         } else {
             foreach ($payload['files'] as $file) {
-                if ($this->fileAlreadyExists($parent, $file->getClientOriginalName(), $user)) {
-                    $skippedCount++;
-                    continue;
-                }
-
-                $this->saveFile($file, $parent, $user);
+                $name = $this->getUniqueName($parent, $file->getClientOriginalName(), $user);
+                $this->saveFile($file, $parent, $user, $name);
                 $savedCount++;
             }
+            \Log::info('foreach finished', ['savedCount' => $savedCount]);
         }
 
         if ($savedCount === 0) {
+            \Log::info('savedCount is 0, returning error');
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'File already exists or could not be uploaded.'], 422);
+            }
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'files' => 'No files could be uploaded. Remove the duplicate or problematic file and try again.',
             ]);
@@ -174,6 +181,10 @@ class FileController extends Controller
 
         if ($skippedCount > 0) {
             $message .= " {$skippedCount} file(s) were skipped because they already existed.";
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => $message]);
         }
 
         return back()->with('message', $message);
@@ -227,12 +238,8 @@ class FileController extends Controller
                 $savedCount += $childSavedCount;
                 $skippedCount += $childSkippedCount;
             } else {
-                if ($this->fileAlreadyExists($parent, $file->getClientOriginalName(), $user)) {
-                    $skippedCount++;
-                    continue;
-                }
-
-                $this->saveFile($file, $parent, $user);
+                $uniqueName = $this->getUniqueName($parent, $file->getClientOriginalName(), $user);
+                $this->saveFile($file, $parent, $user, $uniqueName);
                 $savedCount++;
             }
         }
@@ -271,19 +278,20 @@ class FileController extends Controller
     /**
      * Save the individial file.
      *
-     * @param  array  $tree
+     * @param  \Illuminate\Http\UploadedFile  $file
      * @param  \App\Models\File  $parent
      * @param  \App\Models\User  $user
+     * @param  string|null  $name
      * @return void
      */
-    public function saveFile($file, $parent, $user)
+    public function saveFile($file, $parent, $user, $name = null)
     {
         $path = $file->store('/files/'.$user->id, 'r2');
 
         $model = new File();
         $model->is_folder = false;
         $model->storage_path = $path;
-        $model->name = $file->getClientOriginalName();
+        $model->name = $name ?? $file->getClientOriginalName();
         $model->mime = $file->getMimeType();
         $model->size = $file->getSize();
         $parent->appendNode($model);
@@ -300,6 +308,24 @@ class FileController extends Controller
             ->where('name', $name)
             ->whereNull('deleted_at')
             ->exists();
+    }
+
+    /**
+     * Get a unique name for the file by appending (1), (2), etc.
+     */
+    private function getUniqueName($parent, $name, $user)
+    {
+        $originalName = pathinfo($name, PATHINFO_FILENAME);
+        $extension = pathinfo($name, PATHINFO_EXTENSION);
+        $extension = $extension ? '.' . $extension : '';
+        
+        $counter = 1;
+        while ($this->fileAlreadyExists($parent, $name, $user)) {
+            $name = $originalName . " ({$counter})" . $extension;
+            $counter++;
+        }
+        
+        return $name;
     }
 
     /**
